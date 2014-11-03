@@ -36,15 +36,14 @@ class res_partner(osv.Model):
 
     __check_vat_pa_re1 = re.compile(r'(PE|E)-\d{1,3}-\d{1,5}$')
     __check_vat_pa_re2 = re.\
-        compile(r'((\d|1[0-2]|N)|(\d|1[0-2])-(PI|AV|NT|N))-\d{1,3}-\d{1,5}$')
+        compile(r'((\d|1[0-2]|N)|(\d|1[0-2])-(PI|AV|N))-\d{1,3}-\d{1,5}$')
     __check_vat_pa_re3 = re.compile(r'\d{1,7}-\d{1,4}-\d{1,6}$')
     __check_vat_pa_re4 = re.compile(r'PAS\d{1,27}$')
-    __check_vat_pa_re5 = re.compile(r'(\d|1[0-2])-NT-\d{1,3}-\d{1,5}$')
+    __check_vat_pa_re5 = re.compile(r'N?(\d|1[0-2])-NT-\d{1,3}-\d{1,5}$')
 
     def check_vat_pa(self, vat):
         vat_split_dv = vat.split('DV')
         vat = vat_split_dv[0]
-        ruc_vat.calculateDV(vat)
         if self.__check_vat_pa_re1.match(vat) or self.__check_vat_pa_re2.\
                 match(vat) or self.__check_vat_pa_re3.match(vat) or self.\
                 __check_vat_pa_re4.match(vat) or self.__check_vat_pa_re5.\
