@@ -16,7 +16,7 @@
         'PI': ['PA11-PI-756-249DV64', 'PA11-PI-756-249DV56'],
         'PAS': ['PAPAS123568966433245', 'PAPASG'],
         'PJ': ['PA0102-124-563DV45', 'PA0102-124-563DV45'],
-        'NT': ['PA1-NT-456-4445DV22', 'PA1-NT-456-4445DV22'],#llevara N
+        'NT': ['PAN1-NT-456-4445DV91', 'PAN1-NT-456-4445DV22'],
     }
     test_ok = False
     for type_ruc in ruc_panama_to_test.keys():
