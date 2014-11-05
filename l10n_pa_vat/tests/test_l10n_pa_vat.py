@@ -44,35 +44,66 @@ class TestVat(TransactionCase):
     def test_ruc_panama(self):
         cr, uid = self.cr, self.uid
         ruc_panama_to_test = {
-            '00': ['PA4-444-856DV22', 'PA4-444-856DV45'],
-            'E': ['PAE-447-966DV09', 'PAE-447-966DV75'],
-            'AV': ['PA5-AV-785-856DV65', 'PA5-AV-785-856DV23'],
-            'NTJ': ['PA9-NT-787-158DV30', 'PA9-NT-787-158DV97'],
-            'PE': ['PAPE-256-117DV14', 'PAPE-256-117DV45'],
-            'PI': ['PA11-PI-756-249DV64', 'PA11-PI-756-249DV56'],
-            'PAS': ['PAPAS123568966433245', 'PAPASG'],
-            'PJ': ['PA0102-124-563DV45', 'PA0102-124-563DV45'],
-            'NT': ['PAN1-NT-456-4445DV91', 'PAN1-NT-456-4445DV22'],
+            '00': {'valid':
+                   ['PA4-444-856DV22', 'PA5-890-8976'],
+                   'invalid':
+                   ['PA4-444-856DV45', 'PA2-676777-98354']},
+            'E': {'valid':
+                  ['PAE-447-966DV09', 'PAE-790-8636'],
+                  'invalid':
+                  ['PAE-447-966DV75', 'PAE-I76-354']},
+            'AV': {'valid':
+                   ['PA5-AV-785-856DV65', 'PA7-AV-890-8976'],
+                   'invalid':
+                   ['PA5-AV-785-856DV23', 'PA2-676-9835474']},
+            'NTJ': {'valid':
+                    ['PA9-NT-787-158DV30', 'PA6-NT-730-4523'],
+                    'invalid':
+                    ['PA9-NT-787-158DV97', 'PA2-NY-676-98354']},
+            'PE': {'valid':
+                   ['PAPE-256-117DV14', 'PAPE-296-785'],
+                   'invalid':
+                   ['PAPE-256-117DV45', 'PAPEU-27456-117']},
+            'PI': {'valid':
+                   ['PA11-PI-756-249DV64', 'PA1-PI-656-439'],
+                   'invalid':
+                   ['PA11-PI-756-249DV56', 'PA17-PI-756-249']},
+            'PAS': {'valid':
+                    ['PAPAS123568966433245', 'PAPAS568575123433245'],
+                    'invalid':
+                    ['PAPASG', 'PAPASG12345']},
+            'PJ': {'valid':
+                   ['PA0102-124-563DV45', 'PA04567-756-752'],
+                   'invalid':
+                   ['PA0102-124-563DV77', 'PA045-G-752']},
+            'NT': {'valid':
+                   ['PAN1-NT-456-4445DV91', 'PAN7-NT-756-6945'],
+                   'invalid':
+                   ['PAN1-NT-456-4445DV22', 'PAN1-NT-478886-4452455']},
         }
         partner_test_ruc_id = self.\
             registry("ir.model.data").\
             get_object_reference(self.cr, self.uid, "l10n_pa_vat",
                                  "ruc_panama_partner_0")[1]
-        test_ok = False
         for type_ruc in ruc_panama_to_test.keys():
             msg = "Testing Valid:%s and invalid: %s RUC" %\
-                (ruc_panama_to_test.get(type_ruc)[0],
-                 ruc_panama_to_test.get(type_ruc)[1])
+                (ruc_panama_to_test.get(type_ruc).get('valid'),
+                 ruc_panama_to_test.get(type_ruc).get('invalid'))
             _logger.info(msg)
-            self.partner.write(cr, uid, partner_test_ruc_id,
-                               {'vat': ruc_panama_to_test.get(type_ruc)[0]})
-            try:
-                with mute_logger('openerp.osv.orm'):
-                    self.partner.write(cr, uid, partner_test_ruc_id,
-                                       {'vat':
-                                        ruc_panama_to_test.get(type_ruc)[1]})
-            except except_orm:
-                error = tools.ustr(traceback.format_exc())
-                _logger.info(error)
-                test_ok = True
-            assert test_ok, "Test failed."
+            ruc_to_test = ruc_panama_to_test.get(type_ruc)
+            print ruc_to_test, "ruc_to_testruc_to_testruc_to_testruc_to_test"
+            for ruc_valid in ruc_to_test.get('valid'):
+                self.partner.write(cr, uid, partner_test_ruc_id,
+                                   {'vat': ruc_valid})
+            for ruc_invalid in ruc_to_test.get('invalid'):
+                test_ok = False
+                try:
+                    with mute_logger('openerp.osv.orm'):
+                        self.partner.write(cr, uid, partner_test_ruc_id,
+                                           {'vat':
+                                            ruc_invalid})
+                except except_orm:
+                    error = tools.ustr(traceback.format_exc())
+                    _logger.info(error)
+                    test_ok = True
+                assert test_ok, "Test failed."
