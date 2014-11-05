@@ -23,28 +23,5 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-#
 
-{
-    "name": "RUC Panamá",
-    "version": "1.0",
-    "author": "Vauxoo",
-    "category": "Generic Modules",
-    "description": """This module is used to validate RUC/CEDULA of partner from Panamá.
-Before of install this module you need download this script:
-https://github.com/apple314159/panama-dv/blob/master/ruc.py
-And add to PYTHONPATH and test import: python -c "import ruc"
-    """,
-    "website": "http://www.vauxoo.com/",
-    "license": "AGPL-3",
-    "depends": [
-            "base_vat",
-    ],
-    "demo": [
-        'demo/l10n_pa_vat_demo.xml',
-    ],
-    "data": [
-    ],
-    "installable": True,
-    "active": False,
-}
+from . import test_l10n_pa_vat
