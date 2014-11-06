@@ -43,6 +43,7 @@ class res_partner(osv.Model):
     __check_vat_pa_re5 = re.compile(r'N?(\d|1[0-2])-NT-\d{1,3}-\d{1,5}$')
 
     def check_vat_pa(self, vat):
+        vat = vat.upper()
         vat_split_dv = vat.split('DV')
         vat = vat_split_dv[0]
         if self.__check_vat_pa_re1.match(vat) or self.__check_vat_pa_re2.\

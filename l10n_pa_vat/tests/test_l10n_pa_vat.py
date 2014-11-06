@@ -91,7 +91,6 @@ class TestVat(TransactionCase):
                  ruc_panama_to_test.get(type_ruc).get('invalid'))
             _logger.info(msg)
             ruc_to_test = ruc_panama_to_test.get(type_ruc)
-            print ruc_to_test, "ruc_to_testruc_to_testruc_to_testruc_to_test"
             for ruc_valid in ruc_to_test.get('valid'):
                 self.partner.write(cr, uid, partner_test_ruc_id,
                                    {'vat': ruc_valid})
