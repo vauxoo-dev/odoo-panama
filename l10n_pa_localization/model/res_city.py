@@ -47,8 +47,8 @@ class ResTownship(models.Model):
     code = fields.Char('Township Code', size=5,
                        help='The Township code in max. five chars.')
     metropolitan_area = fields.Boolean(
-      'Metropolitan Area',
-      help="Mark this box if the township belongs to metropolitan area.")
+        'Metropolitan Area',
+        help="Mark this box if the township belongs to metropolitan area.")
 
 
 class ResNeighborhood(models.Model):
