@@ -67,10 +67,6 @@ class WhDocumentAbstract(models.Model):
     wh_rate = fields.Float(
         string='Withholding Rate', digits=dp.get_precision('Withhold'),
         help="Withholding Rate")
-    date = fields.Date(
-        string='Document Date',
-        related='retention_id.date',
-        help='Emission/Voucher/Document date')
 
 
 class WhAbstract(models.Model):
