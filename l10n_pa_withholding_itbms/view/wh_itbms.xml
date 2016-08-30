@@ -274,13 +274,13 @@
             <field name="sequence" eval="10"/>
             <field name="view_mode">tree</field>
             <field name="view_id" ref="view_wh_itbms_tree"/>
-            <field name="act_window_id" ref="action_account_wh_itbms_customer"/>
+            <field name="act_window_id" ref="action_wh_itbms_customer"/>
         </record>
         <record model="ir.actions.act_window.view" id="act_wv_account_wh_itbms_customer_form">
             <field name="sequence" eval="20"/>
             <field name="view_mode">form</field>
             <field name="view_id" ref="view_wh_itbms_form_customer"/>
-            <field name="act_window_id" ref="action_account_wh_itbms_customer"/>
+            <field name="act_window_id" ref="action_wh_itbms_customer"/>
         </record>
 
         <menuitem id="menu_wh_itbms_customer" name="Customer ITBMS Withholding " parent="account.menu_finance_receivables" action="action_wh_itbms_customer"/>
