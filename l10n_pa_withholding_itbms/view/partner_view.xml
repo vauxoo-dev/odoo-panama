@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<openerp>
+    <data>
+        <record id="res_partner_wh_itbms" model="ir.ui.view">
+            <field name="name">res.partner.wh.itbms</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="l10n_abstract.wh_partner"/>
+            <field name="arch" type="xml">
+                <xpath expr="//separator[@string='isep']" position="after">
+                    <newline/>
+                            <group col="6" colspan="2">
+                                <field name="wh_agent_itbms"/>
+                                <field name="wh_rate_itbms"/>
+                            </group>
+                </xpath>
+                <xpath expr="//separator[@string=&quot;isep&quot;]" position="attributes">
+                    <attribute name="string">ITBMS Withholding</attribute>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</openerp>

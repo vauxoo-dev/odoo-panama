@@ -395,12 +395,12 @@ class WhItbms(models.Model):
         for obj in self:
             if obj.type in ('out_invoice', 'out_refund'):
                 if not partner._find_accounting_partner(
-                        obj.partner_id).wh_iva_agent:
+                        obj.partner_id).wh_agent_itbms:
                     raise exceptions.ValidationError(
                         _('The partner must be withholding vat agent .'))
             else:
                 if not partner._find_accounting_partner(
-                        obj.company_id.partner_id).wh_iva_agent:
+                        obj.company_id.partner_id).wh_agent_itbms:
                     raise exceptions.ValidationError(
                         _('The partner must be withholding vat agent .'))
 
