@@ -6,8 +6,9 @@ from openerp.addons import decimal_precision as dp
 from openerp import models, fields, api
 
 
-class WhDocLineAbstract(models.AbstractModel):
-    _name = 'wh.doc.line.abstract'
+class WhDocumentLineAbstract(models.AbstractModel):
+    _name = 'wh.document.line.abstract'
+    _description = "Withholding Document Line Abstract"
 
     inv_tax_id = fields.Many2one(
         'account.invoice.tax', string='Invoice Tax',
@@ -20,22 +21,25 @@ class WhDocLineAbstract(models.AbstractModel):
         string='Tax Name', size=256,
         related='inv_tax_id.name', store=True, readonly=True,
         ondelete='set null', help=" Tax Name")
-    base = fields.Float(
-        string='Tax Base', digit=dp.get_precision('Withhold'),
-        help="Tax Base")
-    amount = fields.Float(
-        string='Taxed Amount', digits=dp.get_precision('Withhold'),
-        help="Withholding tax amount")
+    # /!\ NOTE: `base_tax` used to be `base`
+    base_tax = fields.Float(
+        string='Tax Base', digits=dp.get_precision('Withhold'),
+        help="Tax Base. Untaxed Amount")
+    # /!\ NOTE: `base_wh` used to be `amount`
+    base_wh = fields.Float(
+        string='Withholding Base', digits=dp.get_precision('Withhold'),
+        help="Base upon which to Apply Withholding")
     company_id = fields.Many2one(
         'res.company', string='Company',
         related='inv_tax_id.company_id', store=True, readonly=True,
         ondelete='set null', help="Company")
-    amount_ret = fields.Float(
-        string='Withheld Taxed Amount', digits=dp.get_precision('Withhold'),
+    # /!\ NOTE: `wh_tax` used to be `amount_ret`
+    wh_tax = fields.Float(
+        string='Withheld Tax', digits=dp.get_precision('Withhold'),
         help="Vat Withholding amount")
 
 
-class WhDocumentAbstract(models.Model):
+class WhDocumentAbstract(models.AbstractModel):
     _name = "wh.document.abstract"
     _description = "Withholding Document Abstract"
 
@@ -69,7 +73,7 @@ class WhDocumentAbstract(models.Model):
         help="Withholding Rate")
 
 
-class WhAbstract(models.Model):
+class WhAbstract(models.AbstractModel):
     _name = "wh.abstract"
     _description = "Withholding Abstract"
 
@@ -170,12 +174,14 @@ class WhAbstract(models.Model):
         'account.journal', string='Journal', required=True, readonly=True,
         states={'draft': [('readonly', False)]}, default=_get_journal,
         help="Journal entry")
-    amount_base_ret = fields.Float(
-        string='Amount', digits=dp.get_precision('Withhold'),
-        help="Compute amount without tax")
-    total_tax_ret = fields.Float(
-        string='Amount Wh. tax vat', digits=dp.get_precision('Withhold'),
-        help="Compute amount withholding tax vat")
+    # /!\ NOTE: `base_tax` used to be `amount_base_ret`
+    base_tax = fields.Float(
+        string='Total Tax Base', digits=dp.get_precision('Withhold'),
+        help="Total Tax Base. Total Untaxed Amount")
+    # /!\ NOTE: `total_wh_tax` used to be `total_tax_ret`
+    total_wh_tax = fields.Float(
+        string='Total Withheld Tax', digits=dp.get_precision('Withhold'),
+        help="Withheld Tax Amount")
     fortnight = fields.Selection([
         ('False', "First Fortnight"),
         ('True', "Second Fortnight")
