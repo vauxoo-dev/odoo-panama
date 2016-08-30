@@ -36,7 +36,7 @@ class WhDocumentLineAbstract(models.AbstractModel):
     # /!\ NOTE: `wh_tax` used to be `amount_ret`
     wh_tax = fields.Float(
         string='Withheld Tax', digits=dp.get_precision('Withhold'),
-        help="Vat Withholding amount")
+        help="Withholding amount")
 
 
 class WhDocumentAbstract(models.AbstractModel):
@@ -95,6 +95,14 @@ class WhAbstract(models.AbstractModel):
         return context.get('type', 'in_invoice')
 
     @api.model
+    def _get_wh_code_seq(self):
+        """ Return a iva journal depending of invoice type
+        """
+        raise exceptions.except_orm(
+            _('Method to be Deployed'), 'Warning!!!')
+        return
+
+    @api.model
     def _get_journal(self):
         """Dummy method to fetch a Journal on real model is to be override"""
         return []
@@ -121,7 +129,7 @@ class WhAbstract(models.AbstractModel):
         help="Description of withholding")
     code = fields.Char(
         string='Internal Code', size=32, readonly=True,
-        states={'draft': [('readonly', False)]},
+        states={'draft': [('readonly', False)]}, default=_get_wh_code_seq,
         help="Internal withholding reference")
     number = fields.Char(
         string='Withholding Number', size=32, readonly=True,
@@ -178,8 +186,8 @@ class WhAbstract(models.AbstractModel):
     base_tax = fields.Float(
         string='Total Tax Base', digits=dp.get_precision('Withhold'),
         help="Total Tax Base. Total Untaxed Amount")
-    # /!\ NOTE: `total_wh_tax` used to be `total_tax_ret`
-    total_wh_tax = fields.Float(
+    # /!\ NOTE: `wh_tax` used to be `total_tax_ret`
+    wh_tax = fields.Float(
         string='Total Withheld Tax', digits=dp.get_precision('Withhold'),
         help="Withheld Tax Amount")
     fortnight = fields.Selection([
@@ -188,10 +196,6 @@ class WhAbstract(models.AbstractModel):
         ], string="Fortnight", readonly=True,
         states={"draft": [("readonly", False)]}, default=_get_fortnight,
         help="Withholding type")
-    consolidate_vat_wh = fields.Boolean(
-        string='Fortnight Consolidate Wh. VAT',
-        help='If set then the withholdings vat generate in a same'
-        ' fornight will be grouped in one withholding receipt.')
     third_party_id = fields.Many2one(
         'res.partner', string='Third Party Partner',
         help='Third Party Partner')
