@@ -54,36 +54,9 @@ class WhDocumentLineItbms(models.Model):
                 (record.amount * record.wh_doc_line_id.wh_iva_rate / 100.0) +
                 0.00000001, 2)
 
-    inv_tax_id = fields.Many2one(
-        'account.invoice.tax', string='Invoice Tax',
-        ondelete='set null', help="Tax Line")
     wh_doc_line_id = fields.Many2one(
         'wh.document.itbms', string='ITBMS Withholding Line', required=True,
         ondelete='cascade', help="ITBMS Withholding Line")
-    tax_id = fields.Many2one(
-        'account.tax', string='Tax',
-        related='inv_tax_id.tax_id', store=True, readonly=True,
-        ondelete='set null', help="Tax")
-    name = fields.Char(
-        string='Tax Name', size=256,
-        related='inv_tax_id.name', store=True, readonly=True,
-        ondelete='set null', help=" Tax Name")
-    # /!\ NOTE: `base_tax` used to be `base`
-    base_tax = fields.Float(
-        string='Tax Base', digits=dp.get_precision('Withhold'),
-        help="Tax Base. Untaxed Amount")
-    # /!\ NOTE: `base_wh` used to be `amount`
-    base_wh = fields.Float(
-        string='Withholding Base', digits=dp.get_precision('Withhold'),
-        help="Base upon which to Apply Withholding")
-    company_id = fields.Many2one(
-        'res.company', string='Company',
-        related='inv_tax_id.company_id', store=True, readonly=True,
-        ondelete='set null', help="Company")
-    # /!\ NOTE: `wh_tax` used to be `amount_ret`
-    wh_tax = fields.Float(
-        string='Withheld Tax', digits=dp.get_precision('Withhold'),
-        help="Vat Withholding amount")
 
 
 class WhDocumentItbms(models.Model):
@@ -135,41 +108,13 @@ class WhDocumentItbms(models.Model):
                 rec.amount_tax_ret = 0
                 rec.base_ret = 0
 
-    name = fields.Char(
-        string='Description', size=64, required=True,
-        help="Withholding line Description")
     # /!\ NOTE: `withholding_id` used to be `retention_id`
     withholding_id = fields.Many2one(
         'wh.itbms', string='ITBMS Withholding',
         ondelete='cascade', help="ITBMS Withholding")
-    invoice_id = fields.Many2one(
-        'account.invoice', string='Invoice', required=True,
-        ondelete='restrict', help="Withholding invoice")
-    supplier_invoice_number = fields.Char(
-        string='Supplier Invoice Number', size=64,
-        related='invoice_id.supplier_invoice_number',
-        store=True, readonly=True)
     tax_line = fields.One2many(
         'wh.document.line.itbms', 'wh_doc_line_id', string='Taxes',
         help="Invoice taxes")
-    # /!\ NOTE: `wh_tax` used to be `amount_tax_ret`
-    wh_tax = fields.Float(
-        string='Withheld Tax', digits=dp.get_precision('Withhold'),
-        help="Withheld tax amount")
-    base_wh = fields.Float(
-        string='Withholding Base', digits=dp.get_precision('Withhold'),
-        help="Base upon which to Apply Withholding")
-    # /!\ NOTE: `base_ret` used to be `base_tax`
-    base_tax = fields.Float(
-        string='Tax Base', digits=dp.get_precision('Withhold'),
-        help="Tax Base. Untaxed Amount")
-    move_id = fields.Many2one(
-        'account.move', string='Account Entry', readonly=True,
-        ondelete='restrict', help="Account entry")
-    # /!\ NOTE: `wh_rate` used to be `wh_iva_rate`
-    wh_rate = fields.Float(
-        string='Withholding Rate', digits=dp.get_precision('Withhold'),
-        help="Withholding Rate")
     date = fields.Date(
         string='Voucher Date',
         related='withholding_id.date',
@@ -182,13 +127,13 @@ class WhDocumentItbms(models.Model):
 
     _sql_constraints = [
         ('ret_fact_uniq', 'unique (invoice_id)', 'The invoice has already'
-         ' assigned in withholding vat, you cannot assigned it twice!')
+         ' assigned in withholding, you cannot assigned it twice!')
     ]
 
     @api.multi
     def invoice_id_change(self, invoice_id):
-        """ Return invoice data to assign to withholding vat
-        @param invoice: invoice for assign a withholding vat
+        """ Return invoice data to assign to withholding
+        @param invoice: invoice for assign a withholding
         """
         result = {}
         if invoice_id:
@@ -202,7 +147,7 @@ class WhDocumentItbms(models.Model):
                 raise exceptions.except_orm(
                     'Assigned Invoice !',
                     "The invoice has already assigned in withholding"
-                    " vat code: '%s' !" % (ret.code))
+                    " code: '%s' !" % (ret.code))
             result.update({
                 'name': invoice.name,
                 'supplier_invoice_number': invoice.supplier_invoice_number})
@@ -260,17 +205,6 @@ class WhItbms(models.Model):
         return context.get('type', 'in_invoice')
 
     @api.model
-    def _get_wh_code_seq(self):
-        """ Return a iva journal depending of invoice type
-        """
-        context = self._context
-        type_inv = context.get('type', 'in_invoice')
-        type2journal = {'out_invoice': 'iva_sale',
-                        'in_invoice': 'iva_purchase'}
-        domain = [('type', '=', type2journal.get(type_inv, 'iva_purchase'))]
-        return self.env['account.journal'].search(domain, limit=1)
-
-    @api.model
     def _get_journal(self):
         """ Return a iva journal depending of invoice type
         """
@@ -281,108 +215,15 @@ class WhItbms(models.Model):
         domain = [('type', '=', type2journal.get(type_inv, 'iva_purchase'))]
         return self.env['account.journal'].search(domain, limit=1)
 
-    @api.model
-    def _get_fortnight(self):
-        """ Return currency to use
-        """
-        dt = time.strftime('%Y-%m-%d')
-        tm_mday = time.strptime(dt, '%Y-%m-%d').tm_mday
-        return tm_mday <= 15 and 'False' or 'True'
-
-    @api.model
-    def _get_currency(self):
-        """ Return currency to use
-        """
-        if self.env.user.company_id:
-            return self.env.user.company_id.currency_id.id
-        return self.env['res.currency'].search([('rate', '=', 1.0)], limit=1)
-
-    name = fields.Char(
-        string='Description', size=64, readonly=True,
-        states={'draft': [('readonly', False)]}, required=True,
-        help="Description of withholding")
-    # /!\ NOTE: Method to be declared as generic in Abstract Model
-    code = fields.Char(
-        string='Internal Code', size=32, readonly=True,
-        states={'draft': [('readonly', False)]}, default=_get_wh_code_seq,
-        help="Internal withholding reference")
-    number = fields.Char(
-        string='Withholding Number', size=32, readonly=True,
-        states={'draft': [('readonly', False)]},
-        help="Withholding number")
-    type = fields.Selection([
-        ('out_invoice', 'Customer Invoice'),
-        ('in_invoice', 'Supplier Invoice'),
-        ], string='Type', readonly=True, default=_get_type,
-        help="Withholding type")
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('confirmed', 'Confirmed'),
-        ('done', 'Done'),
-        ('cancel', 'Cancelled')
-        ], string='State', readonly=True, default='draft',
-        help="Withholding State")
-    # /!\ NOTE: `date_accounting` used to be `date_accounting`
-    date_accounting = fields.Date(
-        string='Accounting Date', readonly=True,
-        states={'draft': [('readonly', False)]},
-        help="Keep empty to use the current date")
-    date = fields.Date(
-        string='Voucher Date', readonly=True,
-        states={'draft': [('readonly', False)]},
-        help="Emission/Voucher/Document Date")
-    account_id = fields.Many2one(
-        'account.account', string='Account', required=True, readonly=True,
-        states={'draft': [('readonly', False)]},
-        help="The pay account used for this withholding.")
-    currency_id = fields.Many2one(
-        'res.currency', string='Currency', required=True, readonly=True,
-        states={'draft': [('readonly', False)]}, default=_get_currency,
-        help="Currency")
-    period_id = fields.Many2one(
-        'account.period', string='Force Period', readonly=True,
-        domain=[('state', '<>', 'done')],
-        states={'draft': [('readonly', False)]},
-        help="Keep empty to use the period of the validation(Withholding"
-             " date) date.")
-    company_id = fields.Many2one(
-        'res.company', string='Company', required=True, readonly=True,
-        default=lambda self: self.env.user.company_id.id,
-        help="Company")
-    partner_id = fields.Many2one(
-        'res.partner', string='Partner', readonly=True, required=True,
-        states={'draft': [('readonly', False)]},
-        help="Withholding customer/supplier")
-    journal_id = fields.Many2one(
-        'account.journal', string='Journal', required=True, readonly=True,
-        states={'draft': [('readonly', False)]}, default=_get_journal,
-        help="Journal entry")
     wh_lines = fields.One2many(
         'wh.document.itbms', 'withholding_id',
         string='ITBMS Withholding lines', readonly=True,
         states={'draft': [('readonly', False)]},
         help="ITBMS Withholding lines")
-    # /!\ NOTE: `base_tax` used to be `amount_base_ret`
-    base_tax = fields.Float(
-        string='Total Tax Base', digits=dp.get_precision('Withhold'),
-        help="Total Tax Base. Total Untaxed Amount")
-    # /!\ NOTE: `wh_tax` used to be `total_tax_ret`
-    wh_tax = fields.Float(
-        string='Total Withheld Tax', digits=dp.get_precision('Withhold'),
-        help="Withheld Tax Amount")
-    fortnight = fields.Selection([
-        ('False', "First Fortnight"),
-        ('True', "Second Fortnight")
-        ], string="Fortnight", readonly=True,
-        states={"draft": [("readonly", False)]}, default=_get_fortnight,
-        help="Withholding type")
-    consolidate_vat_wh = fields.Boolean(
-        string='Fortnight Consolidate Wh. VAT',
-        help='If set then the withholdings vat generate in a same'
+    consolidate_itbms_wh = fields.Boolean(
+        string='Fortnight Consolidate Wh. ITBMS',
+        help='If set then the withholdings ITBMS generate in a same'
         ' fortnight will be grouped in one withholding receipt.')
-    third_party_id = fields.Many2one(
-        'res.partner', string='Third Party Partner',
-        help='Third Party Partner')
 
     @api.multi
     def action_cancel(self):
@@ -394,7 +235,7 @@ class WhItbms(models.Model):
 
     @api.multi
     def cancel_move(self):
-        """ Delete move lines related with withholding vat and cancel
+        """ Delete move lines related with withholding and cancel
         """
         moves = []
         for ret in self:
