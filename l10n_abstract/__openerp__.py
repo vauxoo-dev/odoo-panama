@@ -15,6 +15,7 @@
     ],
     "data": [
         'view/view.xml',
+        'view/partner_view.xml',
         'data/data.xml',
     ],
     "installable": True,
