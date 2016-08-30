@@ -3,7 +3,7 @@
 import time
 
 from openerp.addons import decimal_precision as dp
-from openerp import models, fields, api
+from openerp import models, fields, api, exceptions, _
 
 
 class WhDocumentLineAbstract(models.AbstractModel):
@@ -60,7 +60,7 @@ class WhDocumentAbstract(models.AbstractModel):
     base_wh = fields.Float(
         string='Withholding Base', digits=dp.get_precision('Withhold'),
         help="Base upon which to Apply Withholding")
-    # /!\ NOTE: `base_ret` used to be `base_tax`
+    # /!\ NOTE: `base_tax` used to be `base_ret`
     base_tax = fields.Float(
         string='Tax Base', digits=dp.get_precision('Withhold'),
         help="Tax Base. Untaxed Amount")
