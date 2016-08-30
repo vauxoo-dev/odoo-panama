@@ -2,7 +2,6 @@
 
 import time
 
-from openerp.addons import decimal_precision as dp
 from openerp import models, fields, api, exceptions, _
 
 
@@ -22,10 +21,10 @@ class WhDocumentLineItbms(models.Model):
                 record.inv_tax_id.invoice_id.company_id.currency_id.id,
                 record.wh_doc_line_id.withholding_id.date)
             record.base = f_xc(record.inv_tax_id.base)
-            record.amount = f_xc(record.inv_tax_id.amount)
+            record.base_wh = f_xc(record.inv_tax_id.base_wh)
 
     @api.multi
-    def _set_amount_ret(self):
+    def _set_wh_tax(self):
         """ Change withholding amount into iva line
         @param value: new value for retention amount
         """
@@ -34,24 +33,24 @@ class WhDocumentLineItbms(models.Model):
         for record in self:
             if record.wh_doc_line_id.withholding_id.type != 'out_invoice':
                 continue
-            if not record.amount_ret:
+            if not record.wh_tax:
                 continue
             sql_str = """UPDATE account_wh_iva_line_tax set
-                    amount_ret='%s'
-                    WHERE id=%d """ % (record.amount_ret, record.id)
+                    wh_tax='%s'
+                    WHERE id=%d """ % (record.wh_tax, record.id)
             self._cr.execute(sql_str)
         return True
 
     @api.multi
-    @api.depends('amount', 'wh_doc_line_id.wh_iva_rate')
-    def _get_amount_ret(self):
+    @api.depends('base_wh', 'wh_doc_line_id.wh_rate')
+    def _get_wh_tax(self):
         """ Return withholding amount
         """
         for record in self:
             # TODO: THIS NEEDS REFACTORY IN ORDER TO COMPLY WITH THE SALE
             # WITHHOLDING
-            record.amount_ret = round(
-                (record.amount * record.wh_doc_line_id.wh_iva_rate / 100.0) +
+            record.wh_tax = round(
+                (record.base_wh * record.wh_doc_line_id.wh_rate / 100.0) +
                 0.00000001, 2)
 
     wh_doc_line_id = fields.Many2one(
@@ -75,10 +74,10 @@ class WhDocumentItbms(models.Model):
             if rec.invoice_id:
                 rate = rec.withholding_id.type == 'out_invoice' and \
                     partner._find_accounting_partner(
-                        rec.invoice_id.company_id.partner_id).wh_iva_rate or \
+                        rec.invoice_id.company_id.partner_id).wh_rate or \
                     partner._find_accounting_partner(
-                        rec.invoice_id.partner_id).wh_iva_rate
-                rec.write({'wh_iva_rate': rate})
+                        rec.invoice_id.partner_id).wh_rate
+                rec.write({'wh_rate': rate})
                 # Clean tax lines of the withholding voucher
                 awilt.search([('wh_doc_line_id', '=', rec.id)]).unlink()
                 # Filter withholdable taxes
@@ -90,23 +89,23 @@ class WhDocumentItbms(models.Model):
         return True
 
     @api.multi
-    @api.depends('tax_line.amount_ret', 'tax_line.base')
+    @api.depends('tax_line.wh_tax', 'tax_line.base')
     def _amount_all(self):
         """ Return amount total each line
         """
         for rec in self:
             if rec.invoice_id:
                 if rec.invoice_id.type not in ('in_refund'):
-                    rec.amount_tax_ret = sum(l.amount_ret
+                    rec.wh_tax = sum(l.wh_tax
                         for l in rec.tax_line)
-                    rec.base_ret = sum(l.base for l in rec.tax_line)
+                    rec.base_tax = sum(l.base for l in rec.tax_line)
                 else:
-                    rec.amount_tax_ret = -sum(l.amount_ret
+                    rec.wh_tax = -sum(l.wh_tax
                         for l in rec.tax_line)
-                    rec.base_ret = -sum(l.base for l in rec.tax_line)
+                    rec.base_tax = -sum(l.base for l in rec.tax_line)
             else:
-                rec.amount_tax_ret = 0
-                rec.base_ret = 0
+                rec.wh_tax = 0
+                rec.base_tax = 0
 
     # /!\ NOTE: `withholding_id` used to be `retention_id`
     withholding_id = fields.Many2one(
@@ -171,13 +170,13 @@ class WhItbms(models.Model):
         return res
 
     @api.multi
-    @api.depends('wh_lines.amount_tax_ret', 'wh_lines.base_ret')
-    def _amount_ret_all(self):
+    @api.depends('wh_lines.wh_tax', 'wh_lines.base_tax')
+    def _wh_tax_all(self):
         """ Return withholding amount total each line
         """
         for rec in self:
-            rec.total_tax_ret = sum(l.amount_tax_ret for l in rec.wh_lines)
-            rec.amount_base_ret = sum(l.base_ret for l in rec.wh_lines)
+            rec.total_tax_ret = sum(l.wh_tax for l in rec.wh_lines)
+            rec.amount_base_tax = sum(l.base_tax for l in rec.wh_lines)
 
     @api.model
     def _get_wh_iva_seq(self):
@@ -215,6 +214,11 @@ class WhItbms(models.Model):
         domain = [('type', '=', type2journal.get(type_inv, 'iva_purchase'))]
         return self.env['account.journal'].search(domain, limit=1)
 
+    @api.model
+    def _get_wh_code_seq(self):
+        """ Return a Sequence for code in ITBMS"""
+        return None
+
     wh_lines = fields.One2many(
         'wh.document.itbms', 'withholding_id',
         string='ITBMS Withholding lines', readonly=True,
@@ -224,6 +228,10 @@ class WhItbms(models.Model):
         string='Fortnight Consolidate Wh. ITBMS',
         help='If set then the withholdings ITBMS generate in a same'
         ' fortnight will be grouped in one withholding receipt.')
+    code = fields.Char(
+        string='Internal Code', size=32, readonly=True,
+        states={'draft': [('readonly', False)]}, default=_get_wh_code_seq,
+        help="Internal withholding reference")
 
     @api.multi
     def action_cancel(self):
@@ -265,18 +273,18 @@ class WhItbms(models.Model):
         return True
 
     @api.model
-    def _get_valid_wh(self, amount_ret, amount, wh_iva_rate,
+    def _get_valid_wh(self, wh_tax, amount, wh_rate,
                       offset=0.5):
         """ This method can be override in a way that
         you can afford your own value for the offset
-        @param amount_ret: withholding amount
+        @param wh_tax: withholding amount
         @param amount: invoice amount
-        @param wh_iva_rate: iva rate
+        @param wh_rate: iva rate
         @param offset: compensation
         """
 
-        return (amount_ret >= amount * (wh_iva_rate - offset) / 100.0 and
-                amount_ret <= amount * (wh_iva_rate + offset) / 100.0)
+        return (wh_tax >= amount * (wh_rate - offset) / 100.0 and
+                wh_tax <= amount * (wh_rate + offset) / 100.0)
 
     @api.multi
     def check_wh_taxes(self):
@@ -289,8 +297,8 @@ class WhItbms(models.Model):
             for wh_line in record.wh_lines:
                 for tax in wh_line.tax_line:
                     if not record._get_valid_wh(
-                            tax.amount_ret, tax.amount,
-                            tax.wh_doc_line_id.wh_iva_rate):
+                            tax.wh_tax, tax.base_wh,
+                            tax.wh_doc_line_id.wh_rate):
                         if wh_line.id not in wh_line_ids:
                             note += _('\tInvoice: %s, %s, %s\n') % (
                                 wh_line.invoice_id.name,
@@ -299,13 +307,13 @@ class WhItbms(models.Model):
                                 '/')
                             wh_line_ids.append(wh_line.id)
                         note += '\t\t%s\n' % tax.name
-                    if tax.amount_ret > tax.amount:
+                    if tax.wh_tax > tax.base_wh:
                         porcent = '%'
                         error_msg += _(
                             "The withheld amount: %s(%s%s), must be less than"
                             " tax amount %s(%s%s).") % (
-                                tax.amount_ret, wh_line.wh_iva_rate, porcent,
-                                tax.amount, tax.amount * 100, porcent)
+                                tax.wh_tax, wh_line.wh_rate, porcent,
+                                tax.base_wh, tax.base_wh * 100, porcent)
             if wh_line_ids and record.type == 'in_invoice':
                 raise exceptions.except_orm(
                     _('Miscalculated Withheld Taxes'), note)
@@ -503,7 +511,7 @@ class WhItbms(models.Model):
             if ret.wh_lines:
                 for line in ret.wh_lines:
                     writeoff_account_id, writeoff_journal_id = False, False
-                    amount = line.amount_tax_ret
+                    amount = line.wh_tax
                     if line.invoice_id.type in ['in_invoice', 'in_refund']:
                         name = ('COMP. RET. IVA ' + ret.number + ' Doc. ' +
                                 (line.invoice_id.supplier_invoice_number or
@@ -642,8 +650,8 @@ class WhItbms(models.Model):
             values_data['wh_lines'] = \
                 [{'invoice_id': inv.id,
                   'name': inv.name or _('N/A'),
-                  'wh_iva_rate': partner._find_accounting_partner(
-                      inv.partner_id).wh_iva_rate}
+                  'wh_rate': partner._find_accounting_partner(
+                      inv.partner_id).wh_rate}
                  for inv in new_invoices]
             # TODO: integrate to the dictionary the value like this:
             # """'consolidate_vat_wh': partner._find_accounting_partner(
