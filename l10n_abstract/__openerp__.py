@@ -11,7 +11,7 @@
         "account",
     ],
     "demo": [
-        'demo/stock.xml',
+        'demo/demo.xml',
     ],
     "data": [
         'view/view.xml',
