@@ -1,0 +1,317 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<openerp>
+    <data>
+
+    <!--
+    =====================================================
+    Withholding Line
+    =====================================================
+    -->
+
+        <record id="view_wh_itbms_line_tree" model="ir.ui.view">
+            <field name="name">wh.document.itbms.tree</field>
+            <field name="model">wh.document.itbms</field>
+            <field name="arch" type="xml">
+                <tree string="Withholding Lines">
+                    <button name="load_taxes" string="Load Taxes" type="object" icon="gtk-ok" colspan="2" help="Click on this button to ensure the invoice related compute correctly taxes for this line of withholding, it is necesary looking to allow manually force if your are not agreed with automatic computation."/>
+                    <field name="name"/>
+                    <field
+                        name="invoice_id"
+                        on_change="invoice_id_change(invoice_id)"
+                        domain="[('state', '=', 'open'), ('wh_iva', '=', False), ('type', '=', parent.type), '|', ('partner_id','=',parent.partner_id), ('partner_id','child_of',parent.partner_id)]"
+                        />
+                    <field name="supplier_invoice_number"/>
+<!--                    <field name="retention_rate" />-->
+                    <field name="wh_tax" sum="Wh total"/>
+                    <field name="wh_rate"/>
+                    <field name="tax_line"/>
+                    <field name="move_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_wh_itbms_line_form" model="ir.ui.view">
+            <field name="name">wh.document.itbms.form</field>
+            <field name="model">wh.document.itbms</field>
+            <field name="arch" type="xml">
+                <form string="Withholding Lines" version="7.0">
+                    <notebook>
+                        <page string="Withheld Invoice">
+                            <group colspan="4">
+                            <field
+                                name="invoice_id"
+                                on_change="invoice_id_change(invoice_id)"
+                                domain="[('state', '=', 'open'), ('wh_iva', '=', False), ('type', '=', parent.type), '|', ('partner_id','=',parent.partner_id), ('partner_id','child_of',parent.partner_id)]"
+                                />
+                                <field name="supplier_invoice_number"/>
+                                <field name="name"/>
+                                <field name="move_id"/>
+                            </group>
+                            <group colspan="4">
+                                <field name="tax_line" nolabel="1">
+                                    <tree string="Taxes" editable="top">
+                                        <field name="name"/>
+                                        <field name="base_tax" />
+                                        <field name="base_wh" />
+                                        <field name="wh_tax" />
+                                    </tree>
+                                    <form string="Taxes" version="7.0">
+                                        <field colspan="4" name="name"/>
+                                        <field name="tax_id"/>
+                                        <field name="base_tax"/>
+                                        <field name="base_wh"/>
+                                        <field name="wh_tax"/>
+                                        <field name="company_id"/>
+                                    </form>
+                                </field>
+                            </group>
+                            <separator colspan="4"/>
+                            <field name="wh_rate" colspan="2" invisible="True"/>
+                                <group col="2" colspan="2">
+                                    <field name="wh_tax"/>
+                                    <field name="base_tax"/>
+                                </group>
+                                <group col="4" colspan="4">
+                                    <separator string="Please, if there are not taxes loaded, Click on Load Taxes" colspan="4"/>
+                                    <button name="load_taxes" string="Load Taxes" type="object" icon="gtk-ok" colspan="2" help="Click on this button to ensure the invoice related compute correctly taxes for this line of withholding, it is necesary looking to allow manually force if your are not agreed with automatic computation."/>
+                                </group>
+                        </page>
+                    </notebook>
+                </form>
+            </field>
+        </record>
+
+
+    <!--
+    =====================================================
+    Withholding
+    =====================================================
+    -->
+
+
+        <record id="view_wh_itbms_filter" model="ir.ui.view">
+            <field name="name">wh.itbms.search</field>
+            <field name="model">wh.itbms</field>
+            <field name="arch" type="xml">
+                <search string="Search Withholding ITBMS">
+                   <group col="10" colspan="4">
+                        <filter name="draft" icon="terp-gtk-media-pause" string="Draft" domain="[('state','=','draft')]" help="Draft Withholding ITBMS"/>
+                        <filter name="done" icon="terp-check" string="Done" domain="[('state','=','done')]" help="Done Withholding ITBMS"/>
+                        <filter name="cancel" icon="terp-dialog-close" string="Cancel" domain="[('state','=','cancel')]" help="Cancel Withholding ITBMS"/>
+                        <separator orientation="vertical"/>
+                        <field name="code"/>
+                        <field name="name"/>
+                        <field name="number"/>
+                        <field name="partner_id"/>
+                        <field name="journal_id" widget="selection" string="Journal"/>
+                        <field name="date_accounting"/>
+                    </group>
+                    <newline/>
+                    <group expand="1" string="Group By...">
+                        <filter string="Partner" icon="terp-partner" domain="[]" context="{'group_by':'partner_id'}"/>
+                        <separator orientation="vertical"/>
+                        <filter string="State" icon="terp-stock_effects-object-colorize" domain="[]" context="{'group_by':'state'}"/>
+                        <separator orientation="vertical"/>
+                        <filter string="Accounting Date of Withhold" icon="terp-go-month" domain="[]" context="{'group_by':'date_accounting'}"/>
+                    </group>
+               </search>
+            </field>
+        </record>
+
+
+        <record id="view_wh_itbms_tree" model="ir.ui.view">
+            <field name="name">wh.itbms.tree</field>
+            <field name="model">wh.itbms</field>
+            <field name="arch" type="xml">
+                <tree colors="blue:state=='draft'" string="Withholding ITBMS">
+                    <field name="name"/>
+                    <field name="type"/>
+                    <field name="code"/>
+                    <field name="number"/>
+                    <field name="partner_id"/>
+                    <field name="base_tax"/>
+                    <field name="wh_tax"/>
+                    <field name="date_accounting"/>
+                    <field name="currency_id"/>
+                    <field name="period_id"/>
+                    <field name="state"/>
+
+                </tree>
+            </field>
+        </record>
+
+
+                        <!--
+                        <button name="wh_iva_done" states="confirmed" string="Done" icon="gtk-execute"/>
+                        <button name="%(withholding_vat)d" type="action" colspan="2" states="done" string="Print VAT Withholding" icon="gtk-execute"/>
+                        <button name="cancel" colspan="2" states="confirmed,draft,done" string="Cancel" icon="gtk-cancel"/>
+                        -->
+        <record id="view_wh_itbms_form" model="ir.ui.view">
+            <field name="name">wh.itbms.form</field>
+            <field name="model">wh.itbms</field>
+            <field name="arch" type="xml">
+                <form string="Supplier Withholding ITBMS" version="7.0">
+                    <header>
+                        <button colspan="2" name="compute_amount_wh" states="draft" string="Compute Withholding ITBMS" type="object" icon="terp-stock_format-scientific"/>
+                        <button name="wh_iva_confirmed" states="draft" string="Confirm" icon="gtk-go-forward"/>
+                        <button name="wh_iva_done" states="confirmed" string="Done" icon="gtk-execute"/>
+                        <button name="cancel" colspan="2" states="confirmed,draft,done" string="Cancel" icon="gtk-cancel"/>
+                        <button name="action_cancel_draft" colspan="2" states="cancel" string="Set to draft" type="object" icon="terp-stock_effects-object-colorize"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done" statusbar_colors="{&quot;confirmed&quot;:&quot;blue&quot;}"/>
+                    </header>
+                    <group colspan="4" col="6">
+                        <field name="journal_id" select="2" domain="[('type','=','iva_purchase')]"/>
+                        <field name="type"/>
+                        <field name="code"/>
+                        <field
+                            name="partner_id"
+                            on_change="onchange_partner_id(type, partner_id, period_id, fortnight)"
+                            domain="[('supplier','=',True),('parent_id','=',False)]"/>
+                        <field name="third_party_id" domain="[('is_company','=',False),('id','!=',partner_id)]"/>
+                        <field name="currency_id"/>
+                        <field name="date_accounting" readonly="1"/>
+                        <field name="account_id" domain="[('type','=', type == 'in_invoice' and 'payable' or 'receivable'), ('company_id', '=', company_id)]"/>
+                        <field name="name"/>
+                        <field name="period_id" widget='selection' required="1" on_change="onchange_partner_id(type, partner_id, period_id, fortnight)" domain="[('special','=',False)]"/>
+                        <field name="fortnight" required="1" on_change="onchange_partner_id(type, partner_id, period_id, fortnight)"/>
+                        <field name="number" attrs="{'readonly':[('type','=','in_invoice')],'required':[('type','in',['out_invoice','out_refund'])]}"/>
+                        <field name="date"/>
+                        <field name="consolidate_itbms_wh"/>
+                    </group>
+                    <notebook colspan="4">
+                        <page string="Withholding">
+                            <field colspan="4" name="wh_lines" nolabel="1" widget="one2many_list"/>
+                            <group col="2" colspan="2">
+                                <field name="base_tax"/>
+                                <field name="wh_tax"/>
+<!--
+                                <field name="tot_amount_base_wh" groups='l10n_ve_withholding_iva.group_account_wh_iva_manager'/>
+-->
+<!--
+                                <field name="tot_amount_tax_wh" groups='l10n_ve_withholding_iva.group_account_wh_iva_manager'/>
+-->
+                            </group>
+                        </page>
+                        <page string="Other Information">
+                            <field name="company_id"/>
+                        </page>
+                    </notebook>
+                </form>
+            </field>
+        </record>
+
+
+
+                        <!--
+                             TODO: Hbto. Check wizard of version 6.0
+                        -->
+                        <!--
+                        <button name="%(action_change_number_wh_iva)d" type='action' string='Change withholding doc number' icon="terp-gtk-jump-to-ltr" colspan="2"/>
+                        -->
+        <record id="view_wh_itbms_form_customer" model="ir.ui.view">
+            <field name="name">wh.itbms.form.customer</field>
+            <field name="model">wh.itbms</field>
+            <field name="arch" type="xml">
+                <form string="Customer Withholding ITBMS" version="7.0">
+                    <header>
+                        <button name="wh_iva_confirmed" states="draft" string="Confirm" icon="gtk-go-forward"/>
+                        <button name="wh_iva_done" states="confirmed" string="Done" icon="gtk-execute"/>
+                        <button name="cancel" states="confirmed,draft,done" string="Cancel" icon="gtk-cancel"/>
+                        <button name="action_cancel_draft" colspan="2" states="cancel" string="Set to draft" type="object" icon="terp-stock_effects-object-colorize"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done" statusbar_colors="{&quot;confirmed&quot;:&quot;blue&quot;}"/>
+                    </header>
+                    <group colspan="4" col="6">
+                        <field name="journal_id" select="2" domain="[('type','=','iva_sale')]"/>
+                        <field name="type" select="2"/>
+                        <field name="code" select="1"/>
+                        <field
+                            name="partner_id"
+                            on_change="onchange_partner_id(type,partner_id)"
+                            domain="[('wh_iva_agent','=',True), ('customer','=',True), ('parent_id','=',False)]"/>
+                        <field name="third_party_id" domain="[('is_company','=',False),('id','!=',partner_id)]"/>
+                        <field name="currency_id"/>
+                        <field name="date_accounting" on_change="on_change_date_accounting(date_accounting, date)" attrs="{'readonly':[('state','!=','draft')]}"/>
+                        <field name="account_id" domain="[('type','=', type == 'in_invoice' and 'payable' or 'receivable'), ('company_id', '=', company_id)]"/>
+                        <field name="name" select="2"/>
+                        <field name="period_id" widget='selection'/>
+                        <field name="number" select="1" attrs="{'readonly':[('type','=','in_invoice')],'required':[('type','in',['out_invoice','out_refund'])]}"/>
+                        <field name="date" />
+                        <newline/>
+                    </group>
+                    <notebook colspan="4">
+                        <page string="Withholding">
+                            <field colspan="4" name="wh_lines" nolabel="1" widget="one2many_list"/>
+                            <group col="2" colspan="2">
+                                <!-- <field name="base_tax"/> -->
+                                <!-- <field name="wh_tax"/> -->
+                                <!-- <field name="tot_amount_base_wh"/> -->
+                                <!-- <field name="tot_amount_tax_wh"/> -->
+                                <field name="base_tax"/>
+                                <field name="wh_tax"/>
+                            </group>
+                        </page>
+                        <page string="Other Information">
+                            <field name="company_id"/>
+                        </page>
+                    </notebook>
+                </form>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="action_wh_itbms_customer">
+            <field name="name">Customer ITBMS Withholding</field>
+            <field name="res_model">wh.itbms</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('type','=','out_invoice')]</field>
+            <field name="context">{'type':'out_invoice'}</field>
+            <field name="search_view_id" ref="view_wh_itbms_filter"/>
+            <field name="help">With Customer Withholding ITBMS you can create and manage document withholding issued to your customers. Odoo can also generate document withholding automatically from invoices. For retention must add the invoices, process them and then validate the document.</field>
+        </record>
+        <record model="ir.actions.act_window.view" id="act_wv_account_wh_itbms_customer_tree">
+            <field name="sequence" eval="10"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_wh_itbms_tree"/>
+            <field name="act_window_id" ref="action_account_wh_itbms_customer"/>
+        </record>
+        <record model="ir.actions.act_window.view" id="act_wv_account_wh_itbms_customer_form">
+            <field name="sequence" eval="20"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_wh_itbms_form_customer"/>
+            <field name="act_window_id" ref="action_account_wh_itbms_customer"/>
+        </record>
+
+        <menuitem id="menu_wh_itbms_customer" name="Customer ITBMS Withholding " parent="account.menu_finance_receivables" action="action_wh_itbms_customer"/>
+
+
+
+        <record model="ir.actions.act_window" id="action_wh_itbms_supplier">
+            <field name="name">Supplier ITBMS Withholding</field>
+            <field name="res_model">wh.itbms</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('type','=','in_invoice')]</field>
+            <field name="context">{'type':'in_invoice'}</field>
+            <field name="search_view_id" ref="view_wh_itbms_filter"/>
+            <field name="help">With Supplier Withholding ITBMS you can create and manage document withholding issued to your customers. Odoo can also generate document withholding automatically from invoices. For retention must add the invoices, process them and then validate the document.</field>
+        </record>
+        <record model="ir.actions.act_window.view" id="act_wv_wh_itbms_supplier_tree">
+            <field name="sequence" eval="10"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_wh_itbms_tree"/>
+            <field name="act_window_id" ref="action_wh_itbms_supplier"/>
+        </record>
+        <record model="ir.actions.act_window.view" id="act_wv_wh_itbms_supplier_form">
+            <field name="sequence" eval="20"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_wh_itbms_form"/>
+            <field name="act_window_id" ref="action_wh_itbms_supplier"/>
+        </record>
+
+        <menuitem id="menu_action_wh_itbms_supplier" name="Supplier ITBMS Withholding " parent="account.menu_finance_payables" action="action_wh_itbms_supplier"/>
+
+    </data>
+</openerp>
