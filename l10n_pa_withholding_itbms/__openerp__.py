@@ -14,6 +14,7 @@
         'demo/demo.xml',
     ],
     "data": [
+        'view/wh_itbms.xml',
         'view/view.xml',
         'data/data.xml',
     ],
