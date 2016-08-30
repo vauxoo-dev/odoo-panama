@@ -153,9 +153,9 @@ class WhAbstract(models.AbstractModel):
         states={'draft': [('readonly', False)]},
         help="Keep empty to use the current date")
     date = fields.Date(
-        string='Voucher Date', readonly=True,
+        string='Document Date', readonly=True,
         states={'draft': [('readonly', False)]},
-        help="Emission/Voucher/Document Date")
+        help="Emission//Document Date")
     account_id = fields.Many2one(
         'account.account', string='Account', required=True, readonly=True,
         states={'draft': [('readonly', False)]},
