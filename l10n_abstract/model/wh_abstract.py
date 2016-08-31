@@ -10,17 +10,6 @@ class WhDocumentLineAbstract(models.AbstractModel):
     _name = 'wh.document.line.abstract'
     _description = "Withholding Document Line Abstract"
 
-    inv_tax_id = fields.Many2one(
-        'account.invoice.tax', string='Invoice Tax',
-        ondelete='set null', help="Tax Line")
-    tax_id = fields.Many2one(
-        'account.tax', string='Tax',
-        related='inv_tax_id.tax_id', store=True, readonly=True,
-        ondelete='set null', help="Tax")
-    name = fields.Char(
-        string='Tax Name', size=256,
-        related='inv_tax_id.name', store=True, readonly=True,
-        ondelete='set null', help=" Tax Name")
     # /!\ NOTE: `base_tax` used to be `base`
     base_tax = fields.Float(
         string='Tax Base', digits=dp.get_precision('Withhold'),
@@ -29,10 +18,6 @@ class WhDocumentLineAbstract(models.AbstractModel):
     base_wh = fields.Float(
         string='Withholding Base', digits=dp.get_precision('Withhold'),
         help="Base upon which to Apply Withholding")
-    company_id = fields.Many2one(
-        'res.company', string='Company',
-        related='inv_tax_id.company_id', store=True, readonly=True,
-        ondelete='set null', help="Company")
     # /!\ NOTE: `wh_tax` used to be `amount_ret`
     wh_tax = fields.Float(
         string='Withheld Tax', digits=dp.get_precision('Withhold'),
@@ -46,13 +31,6 @@ class WhDocumentAbstract(models.AbstractModel):
     name = fields.Char(
         string='Description', size=64, required=True,
         help="Withholding line Description")
-    invoice_id = fields.Many2one(
-        'account.invoice', string='Invoice', required=True,
-        ondelete='restrict', help="Withholding invoice")
-    supplier_invoice_number = fields.Char(
-        string='Supplier Invoice Number', size=64,
-        related='invoice_id.supplier_invoice_number',
-        store=True, readonly=True)
     # /!\ NOTE: `wh_tax` used to be `amount_tax_ret`
     wh_tax = fields.Float(
         string='Withheld Tax', digits=dp.get_precision('Withhold'),
@@ -64,9 +42,6 @@ class WhDocumentAbstract(models.AbstractModel):
     base_tax = fields.Float(
         string='Tax Base', digits=dp.get_precision('Withhold'),
         help="Tax Base. Untaxed Amount")
-    move_id = fields.Many2one(
-        'account.move', string='Account Entry', readonly=True,
-        ondelete='restrict', help="Account entry")
     # /!\ NOTE: `wh_rate` used to be `wh_iva_rate`
     wh_rate = fields.Float(
         string='Withholding Rate', digits=dp.get_precision('Withhold'),
@@ -115,14 +90,6 @@ class WhAbstract(models.AbstractModel):
         tm_mday = time.strptime(dt, '%Y-%m-%d').tm_mday
         return tm_mday <= 15 and 'False' or 'True'
 
-    @api.model
-    def _get_currency(self):
-        """ Return currency to use
-        """
-        if self.env.user.company_id:
-            return self.env.user.company_id.currency_id.id
-        return self.env['res.currency'].search([('rate', '=', 1.0)], limit=1)
-
     name = fields.Char(
         string='Description', size=64, readonly=True,
         states={'draft': [('readonly', False)]}, required=True,
@@ -156,32 +123,6 @@ class WhAbstract(models.AbstractModel):
         string='Document Date', readonly=True,
         states={'draft': [('readonly', False)]},
         help="Emission//Document Date")
-    account_id = fields.Many2one(
-        'account.account', string='Account', required=True, readonly=True,
-        states={'draft': [('readonly', False)]},
-        help="The pay account used for this withholding.")
-    currency_id = fields.Many2one(
-        'res.currency', string='Currency', required=True, readonly=True,
-        states={'draft': [('readonly', False)]}, default=_get_currency,
-        help="Currency")
-    period_id = fields.Many2one(
-        'account.period', string='Force Period', readonly=True,
-        domain=[('state', '<>', 'done')],
-        states={'draft': [('readonly', False)]},
-        help="Keep empty to use the period of the validation(Withholding"
-             " date) date.")
-    company_id = fields.Many2one(
-        'res.company', string='Company', required=True, readonly=True,
-        default=lambda self: self.env.user.company_id.id,
-        help="Company")
-    partner_id = fields.Many2one(
-        'res.partner', string='Partner', readonly=True, required=True,
-        states={'draft': [('readonly', False)]},
-        help="Withholding customer/supplier")
-    journal_id = fields.Many2one(
-        'account.journal', string='Journal', required=True, readonly=True,
-        states={'draft': [('readonly', False)]}, default=_get_journal,
-        help="Journal entry")
     # /!\ NOTE: `base_tax` used to be `amount_base_ret`
     base_tax = fields.Float(
         string='Total Tax Base', digits=dp.get_precision('Withhold'),
@@ -196,6 +137,3 @@ class WhAbstract(models.AbstractModel):
         ], string="Fortnight", readonly=True,
         states={"draft": [("readonly", False)]}, default=_get_fortnight,
         help="Withholding type")
-    third_party_id = fields.Many2one(
-        'res.partner', string='Third Party Partner',
-        help='Third Party Partner')
