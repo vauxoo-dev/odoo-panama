@@ -18,7 +18,7 @@
                     <field
                         name="invoice_id"
                         on_change="invoice_id_change(invoice_id)"
-                        domain="[('state', '=', 'open'), ('wh_iva', '=', False), ('type', '=', parent.type), '|', ('partner_id','=',parent.partner_id), ('partner_id','child_of',parent.partner_id)]"
+                        domain="[('state', '=', 'open'), ('wh_itbms', '=', False), ('type', '=', parent.type), '|', ('partner_id','=',parent.partner_id), ('partner_id','child_of',parent.partner_id)]"
                         />
                     <field name="supplier_invoice_number"/>
 <!--                    <field name="retention_rate" />-->
@@ -41,7 +41,7 @@
                             <field
                                 name="invoice_id"
                                 on_change="invoice_id_change(invoice_id)"
-                                domain="[('state', '=', 'open'), ('wh_iva', '=', False), ('type', '=', parent.type), '|', ('partner_id','=',parent.partner_id), ('partner_id','child_of',parent.partner_id)]"
+                                domain="[('state', '=', 'open'), ('wh_itbms', '=', False), ('type', '=', parent.type), '|', ('partner_id','=',parent.partner_id), ('partner_id','child_of',parent.partner_id)]"
                                 />
                                 <field name="supplier_invoice_number"/>
                                 <field name="name"/>
@@ -142,7 +142,7 @@
 
 
                         <!--
-                        <button name="wh_iva_done" states="confirmed" string="Done" icon="gtk-execute"/>
+                        <button name="wh_itbms_done" states="confirmed" string="Done" icon="gtk-execute"/>
                         <button name="%(withholding_vat)d" type="action" colspan="2" states="done" string="Print VAT Withholding" icon="gtk-execute"/>
                         <button name="cancel" colspan="2" states="confirmed,draft,done" string="Cancel" icon="gtk-cancel"/>
                         -->
@@ -153,14 +153,14 @@
                 <form string="Supplier Withholding ITBMS" version="7.0">
                     <header>
                         <button colspan="2" name="compute_amount_wh" states="draft" string="Compute Withholding ITBMS" type="object" icon="terp-stock_format-scientific"/>
-                        <button name="wh_iva_confirmed" states="draft" string="Confirm" icon="gtk-go-forward"/>
-                        <button name="wh_iva_done" states="confirmed" string="Done" icon="gtk-execute"/>
+                        <button name="wh_itbms_confirmed" states="draft" string="Confirm" icon="gtk-go-forward"/>
+                        <button name="wh_itbms_done" states="confirmed" string="Done" icon="gtk-execute"/>
                         <button name="cancel" colspan="2" states="confirmed,draft,done" string="Cancel" icon="gtk-cancel"/>
                         <button name="action_cancel_draft" colspan="2" states="cancel" string="Set to draft" type="object" icon="terp-stock_effects-object-colorize"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done" statusbar_colors="{&quot;confirmed&quot;:&quot;blue&quot;}"/>
                     </header>
                     <group colspan="4" col="6">
-                        <field name="journal_id" select="2" domain="[('type','=','iva_purchase')]"/>
+                        <field name="journal_id" select="2" domain="[('type','=','general')]"/>
                         <field name="type"/>
                         <field name="code"/>
                         <field
@@ -185,10 +185,10 @@
                                 <field name="base_tax"/>
                                 <field name="wh_tax"/>
 <!--
-                                <field name="tot_amount_base_wh" groups='l10n_ve_withholding_iva.group_account_wh_iva_manager'/>
+                                <field name="tot_amount_base_wh" groups='l10n_ve_withholding_iva.group_account_wh_itbms_manager'/>
 -->
 <!--
-                                <field name="tot_amount_tax_wh" groups='l10n_ve_withholding_iva.group_account_wh_iva_manager'/>
+                                <field name="tot_amount_tax_wh" groups='l10n_ve_withholding_iva.group_account_wh_itbms_manager'/>
 -->
                             </group>
                         </page>
@@ -206,7 +206,7 @@
                              TODO: Hbto. Check wizard of version 6.0
                         -->
                         <!--
-                        <button name="%(action_change_number_wh_iva)d" type='action' string='Change withholding doc number' icon="terp-gtk-jump-to-ltr" colspan="2"/>
+                        <button name="%(action_change_number_wh_itbms)d" type='action' string='Change withholding doc number' icon="terp-gtk-jump-to-ltr" colspan="2"/>
                         -->
         <record id="view_wh_itbms_form_customer" model="ir.ui.view">
             <field name="name">wh.itbms.form.customer</field>
@@ -214,8 +214,8 @@
             <field name="arch" type="xml">
                 <form string="Customer Withholding ITBMS" version="7.0">
                     <header>
-                        <button name="wh_iva_confirmed" states="draft" string="Confirm" icon="gtk-go-forward"/>
-                        <button name="wh_iva_done" states="confirmed" string="Done" icon="gtk-execute"/>
+                        <button name="wh_itbms_confirmed" states="draft" string="Confirm" icon="gtk-go-forward"/>
+                        <button name="wh_itbms_done" states="confirmed" string="Done" icon="gtk-execute"/>
                         <button name="cancel" states="confirmed,draft,done" string="Cancel" icon="gtk-cancel"/>
                         <button name="action_cancel_draft" colspan="2" states="cancel" string="Set to draft" type="object" icon="terp-stock_effects-object-colorize"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done" statusbar_colors="{&quot;confirmed&quot;:&quot;blue&quot;}"/>
@@ -227,7 +227,7 @@
                         <field
                             name="partner_id"
                             on_change="onchange_partner_id(type,partner_id)"
-                            domain="[('wh_iva_agent','=',True), ('customer','=',True), ('parent_id','=',False)]"/>
+                            domain="[('wh_agent_itbms','=',True), ('customer','=',True), ('parent_id','=',False)]"/>
                         <field name="third_party_id" domain="[('is_company','=',False),('id','!=',partner_id)]"/>
                         <field name="currency_id"/>
                         <field name="date_accounting" on_change="on_change_date_accounting(date_accounting, date)" attrs="{'readonly':[('state','!=','draft')]}"/>

@@ -7,7 +7,7 @@ from openerp import models, fields, api, exceptions, _
 
 class WhDocumentLineItbms(models.Model):
     _name = 'wh.document.line.itbms'
-    _inherit = 'wh.document.line.abstract'
+    _inherit = ['wh.document.line.abstract']
     _description = "Withholding Document Line ITBMS"
 
     @api.multi
@@ -19,30 +19,30 @@ class WhDocumentLineItbms(models.Model):
             f_xc = self.env['l10n.ut'].sxc(
                 record.inv_tax_id.invoice_id.currency_id.id,
                 record.inv_tax_id.invoice_id.company_id.currency_id.id,
-                record.wh_doc_line_id.withholding_id.date)
+                record.wh_document_id.withholding_id.date)
             record.base = f_xc(record.inv_tax_id.base)
             record.base_wh = f_xc(record.inv_tax_id.base_wh)
 
     @api.multi
     def _set_wh_tax(self):
-        """ Change withholding amount into iva line
+        """ Change withholding amount into itbms line
         @param value: new value for retention amount
         """
         # NOTE: use ids argument instead of id for fix the pylint error W0622.
         # Redefining built-in 'id'
         for record in self:
-            if record.wh_doc_line_id.withholding_id.type != 'out_invoice':
+            if record.wh_document_id.withholding_id.type != 'out_invoice':
                 continue
             if not record.wh_tax:
                 continue
-            sql_str = """UPDATE account_wh_iva_line_tax set
-                    wh_tax='%s'
+            sql_str = """UPDATE wh_document_line_itbms
+                    SET wh_tax='%s'
                     WHERE id=%d """ % (record.wh_tax, record.id)
             self._cr.execute(sql_str)
         return True
 
     @api.multi
-    @api.depends('base_wh', 'wh_doc_line_id.wh_rate')
+    @api.depends('base_wh', 'wh_document_id.wh_rate')
     def _get_wh_tax(self):
         """ Return withholding amount
         """
@@ -50,24 +50,39 @@ class WhDocumentLineItbms(models.Model):
             # TODO: THIS NEEDS REFACTORY IN ORDER TO COMPLY WITH THE SALE
             # WITHHOLDING
             record.wh_tax = round(
-                (record.base_wh * record.wh_doc_line_id.wh_rate / 100.0) +
+                (record.base_wh * record.wh_document_id.wh_rate / 100.0) +
                 0.00000001, 2)
 
-    wh_doc_line_id = fields.Many2one(
+    wh_document_id = fields.Many2one(
         'wh.document.itbms', string='ITBMS Withholding Line', required=True,
         ondelete='cascade', help="ITBMS Withholding Line")
+    name = fields.Char(
+        string='Tax Name', size=256,
+        related='inv_tax_id.name', store=True, readonly=True,
+        ondelete='set null', help=" Tax Name")
+    inv_tax_id = fields.Many2one(
+        'account.invoice.tax', string='Invoice Tax',
+        ondelete='set null', help="Tax Line")
+    tax_id = fields.Many2one(
+        'account.tax', string='Tax',
+        related='inv_tax_id.tax_id', store=True, readonly=True,
+        ondelete='set null', help="Tax")
+    company_id = fields.Many2one(
+        'res.company', string='Company',
+        related='inv_tax_id.company_id', store=True, readonly=True,
+        ondelete='set null', help="Company")
 
 
 class WhDocumentItbms(models.Model):
     _name = 'wh.document.itbms'
-    _inherit = 'wh.document.abstract'
+    _inherit = ['wh.document.abstract']
     _description = "Withholding Document ITBMS"
 
     @api.multi
     def load_taxes(self):
         """ Clean and load again tax lines of the withholding voucher
         """
-        awilt = self.env['account.wh.iva.line.tax']
+        awilt = self.env['wh.document.line.itbms']
         partner = self.env['res.partner']
 
         for rec in self:
@@ -76,14 +91,14 @@ class WhDocumentItbms(models.Model):
                     partner._find_accounting_partner(
                         rec.invoice_id.company_id.partner_id).wh_rate or \
                     partner._find_accounting_partner(
-                        rec.invoice_id.partner_id).wh_rate
+                        rec.invoice_id.partner_id).wh_rate_itbms
                 rec.write({'wh_rate': rate})
                 # Clean tax lines of the withholding voucher
-                awilt.search([('wh_doc_line_id', '=', rec.id)]).unlink()
+                awilt.search([('wh_document_id', '=', rec.id)]).unlink()
                 # Filter withholdable taxes
-                for tax in rec.invoice_id.tax_line.filtered("tax_id.ret"):
+                for tax in rec.invoice_id.tax_line.filtered("tax_id.wh"):
                     # Load again tax lines of the withholding voucher
-                    awilt.create({'wh_doc_line_id': rec.id,
+                    awilt.create({'wh_document_id': rec.id,
                                   'inv_tax_id': tax.id,
                                   'tax_id': tax.tax_id.id})
         return True
@@ -111,8 +126,18 @@ class WhDocumentItbms(models.Model):
     withholding_id = fields.Many2one(
         'wh.itbms', string='ITBMS Withholding',
         ondelete='cascade', help="ITBMS Withholding")
+    move_id = fields.Many2one(
+        'account.move', string='Account Entry', readonly=True,
+        ondelete='restrict', help="Account entry")
+    invoice_id = fields.Many2one(
+        'account.invoice', string='Invoice', required=True,
+        ondelete='restrict', help="Withholding invoice")
+    supplier_invoice_number = fields.Char(
+        string='Supplier Invoice Number', size=64,
+        related='invoice_id.supplier_invoice_number',
+        store=True, readonly=True)
     tax_line = fields.One2many(
-        'wh.document.line.itbms', 'wh_doc_line_id', string='Taxes',
+        'wh.document.line.itbms', 'wh_document_id', string='Taxes',
         help="Invoice taxes")
     date = fields.Date(
         string='Voucher Date',
@@ -137,12 +162,12 @@ class WhDocumentItbms(models.Model):
         result = {}
         if invoice_id:
             invoice = self.env['account.invoice'].browse(invoice_id)
-            self._cr.execute('select withholding_id '
-                             'from account_wh_iva_line '
-                             'where invoice_id=%s' % (invoice_id))
+            self._cr.execute('SELECT withholding_id '
+                             'FROM wh_document_itbms '
+                             'WHERE invoice_id=%s' % (invoice_id))
             ret_ids = self._cr.fetchone()
             if bool(ret_ids):
-                ret = self.env['account.wh.iva'].browse(ret_ids[0])
+                ret = self.env['wh.itbms'].browse(ret_ids[0])
                 raise exceptions.except_orm(
                     'Assigned Invoice !',
                     "The invoice has already assigned in withholding"
@@ -156,7 +181,7 @@ class WhDocumentItbms(models.Model):
 
 class WhItbms(models.Model):
     _name = 'wh.itbms'
-    _inherit = 'wh.abstract'
+    _inherit = ['wh.abstract']
     _description = "Withholding ITBMS"
 
     @api.multi
@@ -179,13 +204,13 @@ class WhItbms(models.Model):
             rec.amount_base_tax = sum(l.base_tax for l in rec.wh_lines)
 
     @api.model
-    def _get_wh_iva_seq(self):
-        """ Generate sequences for records of withholding iva
+    def _get_wh_itbms_seq(self):
+        """ Generate sequences for records of withholding itbms
         """
         self._cr.execute(
             "select id,number_next,number_increment,prefix,suffix,padding "
             "from ir_sequence "
-            "where code='account.wh.iva' and active=True")
+            "where code='wh.itbms' and active=True")
         res = self._cr.dictfetchone()
         if res:
             sequence = self.env['ir.sequence'].browse(res['id'])
@@ -205,7 +230,7 @@ class WhItbms(models.Model):
 
     @api.model
     def _get_journal(self):
-        """ Return a iva journal depending of invoice type
+        """ Return a itbms journal depending of invoice type
         """
         context = self._context
         type_inv = context.get('type', 'in_invoice')
@@ -218,6 +243,14 @@ class WhItbms(models.Model):
     def _get_wh_code_seq(self):
         """ Return a Sequence for code in ITBMS"""
         return None
+
+    @api.model
+    def _get_currency(self):
+        """ Return currency to use
+        """
+        if self.env.user.company_id:
+            return self.env.user.company_id.currency_id.id
+        return self.env['res.currency'].search([('rate', '=', 1.0)], limit=1)
 
     wh_lines = fields.One2many(
         'wh.document.itbms', 'withholding_id',
@@ -232,6 +265,35 @@ class WhItbms(models.Model):
         string='Internal Code', size=32, readonly=True,
         states={'draft': [('readonly', False)]}, default=_get_wh_code_seq,
         help="Internal withholding reference")
+    account_id = fields.Many2one(
+        'account.account', string='Account', required=True, readonly=True,
+        states={'draft': [('readonly', False)]},
+        help="The pay account used for this withholding.")
+    currency_id = fields.Many2one(
+        'res.currency', string='Currency', required=True, readonly=True,
+        states={'draft': [('readonly', False)]}, default=_get_currency,
+        help="Currency")
+    period_id = fields.Many2one(
+        'account.period', string='Force Period', readonly=True,
+        domain=[('state', '<>', 'done')],
+        states={'draft': [('readonly', False)]},
+        help="Keep empty to use the period of the validation(Withholding"
+             " date) date.")
+    company_id = fields.Many2one(
+        'res.company', string='Company', required=True, readonly=True,
+        default=lambda self: self.env.user.company_id.id,
+        help="Company")
+    partner_id = fields.Many2one(
+        'res.partner', string='Partner', readonly=True, required=True,
+        states={'draft': [('readonly', False)]},
+        help="Withholding customer/supplier")
+    journal_id = fields.Many2one(
+        'account.journal', string='Journal', required=True, readonly=True,
+        states={'draft': [('readonly', False)]}, default=_get_journal,
+        help="Journal entry")
+    third_party_id = fields.Many2one(
+        'res.partner', string='Third Party Partner',
+        help='Third Party Partner')
 
     @api.multi
     def action_cancel(self):
@@ -279,7 +341,7 @@ class WhItbms(models.Model):
         you can afford your own value for the offset
         @param wh_tax: withholding amount
         @param amount: invoice amount
-        @param wh_rate: iva rate
+        @param wh_rate: itbms rate
         @param offset: compensation
         """
 
@@ -298,7 +360,7 @@ class WhItbms(models.Model):
                 for tax in wh_line.tax_line:
                     if not record._get_valid_wh(
                             tax.wh_tax, tax.base_wh,
-                            tax.wh_doc_line_id.wh_rate):
+                            tax.wh_document_id.wh_rate):
                         if wh_line.id not in wh_line_ids:
                             note += _('\tInvoice: %s, %s, %s\n') % (
                                 wh_line.invoice_id.name,
@@ -382,7 +444,7 @@ class WhItbms(models.Model):
         for obj in self:
             if obj.type in ('out_invoice', 'out_refund'):
                 for wh_line in obj.wh_lines:
-                    if not wh_line.invoice_id.write({'wh_iva_id': obj.id}):
+                    if not wh_line.invoice_id.write({'wh_itbms_id': obj.id}):
                         return False
         return True
 
@@ -417,9 +479,9 @@ class WhItbms(models.Model):
 
     @api.model
     def create(self, values):
-        wh_iva = super(WhItbms, self).create(values)
-        wh_iva._partner_invoice_check()
-        return wh_iva
+        wh_itbms = super(WhItbms, self).create(values)
+        wh_itbms._partner_invoice_check()
+        return wh_itbms
 
     @api.multi
     def action_number(self):
@@ -429,20 +491,20 @@ class WhItbms(models.Model):
             if obj_ret.type == 'in_invoice':
                 self._cr.execute(
                     'SELECT id, number '
-                    'FROM account_wh_iva '
+                    'FROM wh_itbms '
                     'WHERE id=%s' % (obj_ret.id))
 
                 for (awi_id, number) in self._cr.fetchall():
                     if not number:
                         number = self.env['ir.sequence'].get(
-                            'account.wh.iva.%s' % obj_ret.type)
+                            'wh.itbms.%s' % obj_ret.type)
                     if not number:
                         raise exceptions.except_orm(
                             _("Missing Configuration !"),
                             _('No Sequence configured for Supplier'
                               ' VAT Withholding'))
 
-                    self._cr.execute('UPDATE account_wh_iva SET number=%s '
+                    self._cr.execute('UPDATE wh_itbms SET number=%s '
                                      'WHERE id=%s', (number, awi_id))
             return True
 
@@ -487,7 +549,7 @@ class WhItbms(models.Model):
                    company_id=self.env.user.company_id.id)
         for ret in self.with_context(ctx):
             for line in ret.wh_lines:
-                if line.move_id or line.invoice_id.wh_iva:
+                if line.move_id or line.invoice_id.wh_itbms:
                     raise exceptions.except_orm(
                         _('Invoice already withhold !'),
                         _("You must omit the follow invoice '%s' !") %
@@ -513,11 +575,11 @@ class WhItbms(models.Model):
                     writeoff_account_id, writeoff_journal_id = False, False
                     amount = line.wh_tax
                     if line.invoice_id.type in ['in_invoice', 'in_refund']:
-                        name = ('COMP. RET. IVA ' + ret.number + ' Doc. ' +
+                        name = ('COMP. RET. itbms ' + ret.number + ' Doc. ' +
                                 (line.invoice_id.supplier_invoice_number or
                                  str()))
                     else:
-                        name = ('COMP. RET. IVA ' + ret.number + ' Doc. ' +
+                        name = ('COMP. RET. itbms ' + ret.number + ' Doc. ' +
                                 (line.invoice_id.number or str()))
                     acc_id = line.invoice_id.account_id.id
                     invoice = self.env['account.invoice'].with_context(
@@ -554,7 +616,7 @@ class WhItbms(models.Model):
 
                     if (rl and line.invoice_id.type
                             in ['out_invoice', 'out_refund']):
-                        invoice.write({'wh_iva_id': ret.id})
+                        invoice.write({'wh_itbms_id': ret.id})
             return True
 
     @api.multi
@@ -574,11 +636,11 @@ class WhItbms(models.Model):
         information from the invoice.
         """
         if self.ids:
-            wil = self.env['account.wh.iva.line'].search([
+            wil = self.env['wh.document.itbms'].search([
                 ('withholding_id', 'in', self.ids)])
             invoice = wil.mapped("invoice_id")
             if invoice:
-                invoice.write({'wh_iva_id': False})
+                invoice.write({'wh_itbms_id': False})
             if wil:
                 wil.unlink()
 
@@ -607,6 +669,9 @@ class WhItbms(models.Model):
         wh_type = inv_type in ('out_invoice', 'out_refund') and 'sale' or \
             'purchase'
 
+        # clear lines
+        self.clear_wh_lines()
+
         # pull account info
         if partner_id:
             acc_part_id = partner._find_accounting_partner(
@@ -618,23 +683,15 @@ class WhItbms(models.Model):
                 acc_id = (acc_part_id.property_account_payable and
                           acc_part_id.property_account_payable.id or False)
             values_data['account_id'] = acc_id
-
-        # clear lines
-        self.clear_wh_lines()
-
-        if not partner_id:
-            if wh_type == 'sale':
-                return {'value': values_data}
-            else:
-                if not period_id or not fortnight:
-                    return {'value': values_data}
+        else:
+            return {'value': values_data}
 
         # add lines
         ttype = wh_type == 'sale' and ['out_invoice', 'out_refund'] \
             or ['in_invoice', 'in_refund']
         invoices = self.env['account.invoice'].search([
-            ('state', '=', 'open'), ('wh_iva', '=', False),
-            ('wh_iva_id', '=', False), ('type', 'in', ttype),
+            ('state', '=', 'open'), ('wh_itbms', '=', False),
+            ('wh_itbms_id', '=', False), ('type', 'in', ttype),
             '|',
             ('partner_id', '=', acc_part_id.id),
             ('partner_id', 'child_of', acc_part_id.id),
@@ -645,7 +702,7 @@ class WhItbms(models.Model):
                 lambda r: period.find_fortnight(r.date_invoice) ==
                 (period_id, fortnight))
         # search withholdable invoices
-        new_invoices = invoices.filtered("tax_line.tax_id.ret")
+        new_invoices = invoices.filtered("tax_line.tax_id.wh")
         if new_invoices:
             values_data['wh_lines'] = \
                 [{'invoice_id': inv.id,
@@ -685,7 +742,7 @@ class WhItbms(models.Model):
 
     @api.multi
     def check_wh_lines_fortnights(self):
-        """ Check that every wh iva line belongs to the wh iva fortnight."""
+        """ Check that every wh itbms line belongs to the wh itbms fortnight."""
         period = self.env['account.period']
         error_msg = str()
         fortnight_str = {'True': ' - Second Fortnight)',
@@ -723,7 +780,7 @@ class WhItbms(models.Model):
             for retention in self:
                 whl_ids = [line.id for line in retention.wh_lines]
                 if whl_ids:
-                    awil = self.env['account.wh.iva.line'].browse(whl_ids)
+                    awil = self.env['wh.document.itbms'].browse(whl_ids)
                     awil.load_taxes()
         return True
 
@@ -738,18 +795,18 @@ class WhItbms(models.Model):
 
     @api.multi
     def _check_tax_iva_lines(self):
-        """Check if this IVA WH DOC is being used in a TXT IVA DOC"""
-        til = self.env["txt.iva.line"].search([
+        """Check if this itbms WH DOC is being used in a TXT itbms DOC"""
+        til = self.env["txt.itbms.line"].search([
             ('txt_id.state', '!=', 'draft'),
             ('voucher_id', 'in', self.ids)])
 
         if not til:
             return True
 
-        note = _('The Following IVA TXT DOC should be set to Draft before'
+        note = _('The Following itbms TXT DOC should be set to Draft before'
                  ' Cancelling this Document\n\n')
         ti_ids = list(set([til_brw.txt_id.id for til_brw in til]))
-        for ti_brw in self.env['txt.iva'].browse(ti_ids):
+        for ti_brw in self.env['txt.itbms'].browse(ti_ids):
             note += '%s\n' % ti_brw.name
             raise exceptions.except_orm(_("Invalid Procedure!"), note)
 
@@ -792,7 +849,7 @@ class WhItbms(models.Model):
 
     @api.multi
     def check_wh_lines(self):
-        """ Check that wh iva has lines to withhold."""
+        """ Check that wh itbms has lines to withhold."""
         for awi_brw in self:
             if not awi_brw.wh_lines:
                 raise exceptions.except_orm(
