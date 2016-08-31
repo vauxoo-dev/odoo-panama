@@ -18,6 +18,7 @@
         'view/wh_itbms.xml',
         'view/view.xml',
         'data/data.xml',
+        'workflow/workflow.xml',
     ],
     "installable": True,
     "auto_install": False,
