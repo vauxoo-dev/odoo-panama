@@ -16,6 +16,7 @@
     "data": [
         'view/partner_view.xml',
         'view/wh_itbms.xml',
+        'view/account_view.xml',
         'view/view.xml',
         'data/data.xml',
         'workflow/workflow.xml',
