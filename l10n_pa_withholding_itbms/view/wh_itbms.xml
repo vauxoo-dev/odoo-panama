@@ -221,7 +221,7 @@
                         <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done" statusbar_colors="{&quot;confirmed&quot;:&quot;blue&quot;}"/>
                     </header>
                     <group colspan="4" col="6">
-                        <field name="journal_id" select="2" domain="[('type','=','iva_sale')]"/>
+                        <field name="journal_id" select="2" domain="[('type','=','general')]"/>
                         <field name="type" select="2"/>
                         <field name="code" select="1"/>
                         <field

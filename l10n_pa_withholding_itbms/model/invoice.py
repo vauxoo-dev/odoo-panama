@@ -337,12 +337,13 @@ class AccountInvoice(models.Model):
 
                 for tax_brw in to_wh:
                     if 'invoice' in invoice.type:
-                        acc = (tax_brw.tax_id.wh_vat_collected_account_id and
-                               tax_brw.tax_id.wh_vat_collected_account_id.id or
-                               False)
+                        acc = (
+                            tax_brw.tax_id.wh_itbms_collected_account_id and
+                            tax_brw.tax_id.wh_itbms_collected_account_id.id or
+                            False)
                     elif 'refund' in invoice.type:
-                        acc = (tax_brw.tax_id.wh_vat_paid_account_id and
-                               tax_brw.tax_id.wh_vat_paid_account_id.id or
+                        acc = (tax_brw.tax_id.wh_itbms_paid_account_id and
+                               tax_brw.tax_id.wh_itbms_paid_account_id.id or
                                False)
                     if not acc:
                         raise exceptions.except_orm(
@@ -352,7 +353,7 @@ class AccountInvoice(models.Model):
                     res.append((0, 0, {
                         'debit':
                         direction * tax_brw.wh_tax < 0 and
-                        direction * tax_brw.wh_tax,
+                        -direction * tax_brw.wh_tax,
                         'credit':
                         direction * tax_brw.wh_tax > 0 and
                         direction * tax_brw.wh_tax,

@@ -529,6 +529,8 @@ class WhItbms(models.Model):
     def action_number(self):
         """ Update records numbers
         """
+        # /!\ NOTE: FIX-ME
+        return True
         for obj_ret in self:
             if obj_ret.type == 'in_invoice':
                 self._cr.execute(
@@ -559,8 +561,7 @@ class WhItbms(models.Model):
         for wh in self:
             if wh.type in ['in_invoice']:
                 values['date_accounting'] = \
-                    wh.company_id.allow_vat_wh_outdated \
-                    and wh.date or time.strftime('%Y-%m-%d')
+                    wh.date or time.strftime('%Y-%m-%d')
                 values['date'] = values['date_accounting']
                 if not ((wh.period_id.id, wh.fortnight) ==
                         period.find_fortnight(values['date_accounting'])):
@@ -573,8 +574,8 @@ class WhItbms(models.Model):
                 values['date_accounting'] = \
                     wh.date_accounting or time.strftime('%Y-%m-%d')
 
-            if not wh.company_id.allow_vat_wh_outdated and \
-                    values['date_accounting'] > time.strftime('%Y-%m-%d'):
+            # if not wh.company_id.allow_vat_wh_outdated and \
+            if values['date_accounting'] > time.strftime('%Y-%m-%d'):
                 error_msg = _(
                     'You have introduced a non valid withholding date (a date \
                     in the future). The withholding date needs to be at least \
@@ -619,7 +620,8 @@ class WhItbms(models.Model):
                     writeoff_account_id, writeoff_journal_id = False, False
                     amount = line.wh_tax
                     if line.invoice_id.type in ['in_invoice', 'in_refund']:
-                        name = ('COMP. RET. itbms ' + ret.number + ' Doc. ' +
+                        name = ('COMP. RET. itbms ' + (ret.number or 'N/A') +
+                                ' Doc. ' +
                                 (line.invoice_id.supplier_invoice_number or
                                  str()))
                     else:
@@ -752,7 +754,7 @@ class WhItbms(models.Model):
                 [{'invoice_id': inv.id,
                   'name': inv.name or _('N/A'),
                   'wh_rate': partner._find_accounting_partner(
-                      inv.partner_id).wh_rate}
+                      inv.partner_id).wh_rate_itbms}
                  for inv in new_invoices]
             # TODO: integrate to the dictionary the value like this:
             # """'consolidate_vat_wh': partner._find_accounting_partner(
@@ -882,8 +884,8 @@ class WhItbms(models.Model):
         '''
 
         if (not self.check_wh_lines() or
-                not self.check_wh_lines_fortnights() or
-                not self.check_invoice_nro_ctrl() or
+                # not self.check_wh_lines_fortnights() or
+                # not self.check_invoice_nro_ctrl() or
                 not self.check_vat_wh() or
                 not self.check_wh_taxes() or
                 not self.write_wh_invoices() or
