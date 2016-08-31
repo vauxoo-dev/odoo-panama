@@ -137,3 +137,22 @@ class WhAbstract(models.AbstractModel):
         ], string="Fortnight", readonly=True,
         states={"draft": [("readonly", False)]}, default=_get_fortnight,
         help="Withholding type")
+
+    def exchange(self, from_amount, from_currency_id, to_currency_id,
+                 exchange_date):
+        context = dict(self._context or {})
+        if from_currency_id == to_currency_id:
+            return from_amount
+        rc_obj = self.env['res.currency']
+        context['date'] = exchange_date
+        return rc_obj.with_context(context).compute(
+            from_currency_id, to_currency_id, from_amount)
+
+    def exc(self, from_currency_id, to_currency_id, exchange_date):
+        ''' This is a closure that allow to use the exchange rate conversion
+        in a short way '''
+
+        def _xc(from_amount):
+            return self.exchange(from_amount, from_currency_id,
+                                 to_currency_id, exchange_date)
+        return _xc
