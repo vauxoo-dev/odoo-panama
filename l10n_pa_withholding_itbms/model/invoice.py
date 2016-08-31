@@ -451,8 +451,7 @@ class AccountInvoiceTax(models.Model):
 
     @api.model
     def compute_wh_tax(self, invoice):
-        """ Calculate withholding amount
-        """
+        """ Calculate withholding amount """
         res = {}
         partner = self.env['res.partner']
         acc_part_id = invoice.type in ['out_invoice', "out_refund"] and \

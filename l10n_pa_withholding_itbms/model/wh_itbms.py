@@ -2,6 +2,7 @@
 
 import time
 
+from openerp.addons import decimal_precision as dp
 from openerp import models, fields, api, exceptions, _
 
 
@@ -16,20 +17,18 @@ class WhDocumentLineItbms(models.Model):
         """ Return withholding amount
         """
         for record in self:
-            f_xc = self.env['l10n.ut'].sxc(
+            exc = self.env['wh.itbms'].exc(
                 record.inv_tax_id.invoice_id.currency_id.id,
                 record.inv_tax_id.invoice_id.company_id.currency_id.id,
                 record.wh_document_id.withholding_id.date)
-            record.base = f_xc(record.inv_tax_id.base)
-            record.base_wh = f_xc(record.inv_tax_id.base_wh)
+            record.base_tax = exc(record.inv_tax_id.base_tax)
+            record.base_wh = exc(record.inv_tax_id.amount)
 
     @api.multi
     def _set_wh_tax(self):
         """ Change withholding amount into itbms line
         @param value: new value for retention amount
         """
-        # NOTE: use ids argument instead of id for fix the pylint error W0622.
-        # Redefining built-in 'id'
         for record in self:
             if record.wh_document_id.withholding_id.type != 'out_invoice':
                 continue
@@ -71,6 +70,21 @@ class WhDocumentLineItbms(models.Model):
         'res.company', string='Company',
         related='inv_tax_id.company_id', store=True, readonly=True,
         ondelete='set null', help="Company")
+    # /!\ NOTE: `base_tax` used to be `base`
+    base_tax = fields.Float(
+        string='Tax Base', digits=dp.get_precision('Withhold'),
+        store=True, compute=_get_base_amount,
+        help="Tax Base. Untaxed Amount")
+    # /!\ NOTE: `base_wh` used to be `amount`
+    base_wh = fields.Float(
+        string='Withholding Base', digits=dp.get_precision('Withhold'),
+        store=True, compute=_get_base_amount,
+        help="Base upon which to Apply Withholding")
+    # /!\ NOTE: `wh_tax` used to be `amount_ret`
+    wh_tax = fields.Float(
+        string='Withheld Tax', digits=dp.get_precision('Withhold'),
+        store=True, compute=_get_wh_tax, inverse=_set_wh_tax,
+        help="Withholding amount")
 
 
 class WhDocumentItbms(models.Model):
@@ -87,9 +101,10 @@ class WhDocumentItbms(models.Model):
 
         for rec in self:
             if rec.invoice_id:
+                company_partner_id = rec.invoice_id.company_id.partner_id
                 rate = rec.withholding_id.type == 'out_invoice' and \
                     partner._find_accounting_partner(
-                        rec.invoice_id.company_id.partner_id).wh_rate or \
+                        company_partner_id).wh_rate_itbms or \
                     partner._find_accounting_partner(
                         rec.invoice_id.partner_id).wh_rate_itbms
                 rec.write({'wh_rate': rate})
@@ -104,20 +119,18 @@ class WhDocumentItbms(models.Model):
         return True
 
     @api.multi
-    @api.depends('tax_line.wh_tax', 'tax_line.base')
+    @api.depends('tax_line.wh_tax', 'tax_line.base_tax')
     def _amount_all(self):
         """ Return amount total each line
         """
         for rec in self:
             if rec.invoice_id:
-                if rec.invoice_id.type not in ('in_refund'):
-                    rec.wh_tax = sum(l.wh_tax
-                        for l in rec.tax_line)
-                    rec.base_tax = sum(l.base for l in rec.tax_line)
+                if rec.invoice_id.type not in ('in_refund',):
+                    rec.wh_tax = sum(l.wh_tax for l in rec.tax_line)
+                    rec.base_tax = sum(l.base_tax for l in rec.tax_line)
                 else:
-                    rec.wh_tax = -sum(l.wh_tax
-                        for l in rec.tax_line)
-                    rec.base_tax = -sum(l.base for l in rec.tax_line)
+                    rec.wh_tax = -sum(l.wh_tax for l in rec.tax_line)
+                    rec.base_tax = -sum(l.base_tax for l in rec.tax_line)
             else:
                 rec.wh_tax = 0
                 rec.base_tax = 0
@@ -148,6 +161,16 @@ class WhDocumentItbms(models.Model):
         string='Accounting Date',
         related='withholding_id.date_accounting',
         help='Accouting date. Date Withholding')
+    # /!\ NOTE: `wh_tax` used to be `amount_tax_ret`
+    wh_tax = fields.Float(
+        string='Withheld Tax', digits=dp.get_precision('Withhold'),
+        compute=_amount_all,
+        help="Withheld tax amount")
+    # /!\ NOTE: `base_tax` used to be `base_ret`
+    base_tax = fields.Float(
+        string='Tax Base', digits=dp.get_precision('Withhold'),
+        compute=_amount_all,
+        help="Tax Base. Untaxed Amount")
 
     _sql_constraints = [
         ('ret_fact_uniq', 'unique (invoice_id)', 'The invoice has already'
@@ -252,6 +275,15 @@ class WhItbms(models.Model):
             return self.env.user.company_id.currency_id.id
         return self.env['res.currency'].search([('rate', '=', 1.0)], limit=1)
 
+    @api.multi
+    @api.depends('wh_lines.wh_tax', 'wh_lines.base_tax')
+    def _amount_ret_all(self):
+        """ Return withholding amount total each line
+        """
+        for rec in self:
+            rec.wh_tax = sum(l.wh_tax for l in rec.wh_lines)
+            rec.base_tax = sum(l.base_tax for l in rec.wh_lines)
+
     wh_lines = fields.One2many(
         'wh.document.itbms', 'withholding_id',
         string='ITBMS Withholding lines', readonly=True,
@@ -294,6 +326,16 @@ class WhItbms(models.Model):
     third_party_id = fields.Many2one(
         'res.partner', string='Third Party Partner',
         help='Third Party Partner')
+    # /!\ NOTE: `base_tax` used to be `amount_base_ret`
+    base_tax = fields.Float(
+        string='Total Tax Base', digits=dp.get_precision('Withhold'),
+        compute='_amount_ret_all',
+        help="Total Tax Base. Total Untaxed Amount")
+    # /!\ NOTE: `wh_tax` used to be `total_tax_ret`
+    wh_tax = fields.Float(
+        string='Total Withheld Tax', digits=dp.get_precision('Withhold'),
+        compute='_amount_ret_all',
+        help="Withheld Tax Amount")
 
     @api.multi
     def action_cancel(self):
@@ -516,7 +558,8 @@ class WhItbms(models.Model):
         period = self.env['account.period']
         for wh in self:
             if wh.type in ['in_invoice']:
-                values['date_accounting'] = wh.company_id.allow_vat_wh_outdated \
+                values['date_accounting'] = \
+                    wh.company_id.allow_vat_wh_outdated \
                     and wh.date or time.strftime('%Y-%m-%d')
                 values['date'] = values['date_accounting']
                 if not ((wh.period_id.id, wh.fortnight) ==
@@ -527,7 +570,8 @@ class WhItbms(models.Model):
                           "date needs to be in the same withholding period and"
                           " fortnigh."))
             elif wh.type in ['out_invoice']:
-                values['date_accounting'] = wh.date_accounting or time.strftime('%Y-%m-%d')
+                values['date_accounting'] = \
+                    wh.date_accounting or time.strftime('%Y-%m-%d')
 
             if not wh.company_id.allow_vat_wh_outdated and \
                     values['date_accounting'] > time.strftime('%Y-%m-%d'):
@@ -591,7 +635,7 @@ class WhItbms(models.Model):
 
                     if (line.invoice_id.currency_id.id !=
                             line.invoice_id.company_id.currency_id.id):
-                        f_xc = self.env['l10n.ut'].sxc(
+                        exc = self.env['wh.itbms'].exc(
                             line.invoice_id.currency_id.id,
                             line.invoice_id.company_id.currency_id.id,
                             line.withholding_id.date)
@@ -602,11 +646,11 @@ class WhItbms(models.Model):
 
                             if ml.credit:
                                 ml.write({
-                                    'amount_currency': f_xc(ml.credit) * -1})
+                                    'amount_currency': exc(ml.credit) * -1})
 
                             elif ml.debit:
                                 ml.write({
-                                    'amount_currency': f_xc(ml.debit)})
+                                    'amount_currency': exc(ml.debit)})
 
                     # make the withholding line point to that move
                     rl = {'move_id': ret_move['move_id']}
@@ -742,7 +786,7 @@ class WhItbms(models.Model):
 
     @api.multi
     def check_wh_lines_fortnights(self):
-        """ Check that every wh itbms line belongs to the wh itbms fortnight."""
+        """Check that every wh itbms line belongs to the wh itbms fortnight."""
         period = self.env['account.period']
         error_msg = str()
         fortnight_str = {'True': ' - Second Fortnight)',
