@@ -9,6 +9,7 @@
     "license": "AGPL-3",
     "depends": [
         "account",
+        "l10n_pa_vat",
     ],
     "demo": [
         'demo/demo.xml',
