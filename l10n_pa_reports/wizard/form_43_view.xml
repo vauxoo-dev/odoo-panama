@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_account_pa_form43_report" model="ir.ui.view">
+            <field name="name">view.account.pa.form43.report</field>
+            <field name="model">account.pa.form43.report</field>
+            <field name="arch" type="xml">
+            <form string="form43 Report" version="7.0">
+                <field invisible="1" name="state"/>
+                <field name="name" invisible="1"/>
+                <group states="choose" colspan="4">
+                    <separator string="Period" colspan="4"/>
+                    <group>
+                        <field name="date_from"/> -
+                    </group>
+                    <group>
+                        <field name="date_to"/>
+                    </group>
+                    <group colspan="4">
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="entries_to_print" />
+                    </group>
+                </group>
+                <div states="get">
+                    <h2>form43 report has been successfully created!</h2>
+                    <p>Here is the exported form43 Report file:</p>
+                    <p><field name="file_csv" readonly="1" filename="filename_csv"/> Plain CSV format.</p>
+                    <p><field name="file_xls" readonly="1" filename="filename_xls"/> Excel format.</p>
+                    <p><field name="file_txt" readonly="1" filename="filename"/> TXT format.</p>
+                </div>
+                <div states="not_file">
+                    <h2>form43 report not has been created!</h2>
+                    <p>Probably by:</p>
+                    <p>- Not exists movements in the selected period.</p>
+                    <p>- You do not have configured taxes correctly.</p>
+                </div>
+                <footer states="choose">
+                    <button icon='gtk-cancel' special="cancel"  string="Cancel" />
+                    <button name="create_form43" string="Create" colspan="1" type="object" icon="gtk-ok"/>
+                </footer>
+                <footer attrs="{'invisible':[('state','not in', ('get', 'not_file'))]}">
+                    <button special="cancel" string="Close" type="object"/>
+                </footer>
+            </form>
+            </field>
+        </record>
+
+        <record id="action_account_pa_form43_report" model="ir.actions.act_window">
+            <field name="name">form43 Report</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.pa.form43.report</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="help"></field>
+        </record>
+
+        <!-- <menuitem name="Transactions with third parties [ form43 ] " -->
+        <!--             parent="l10n_mx_accountinge_mexican_statements_menu" -->
+        <!--             action="action_account_pa_form43_report" -->
+        <!--             id="menu_account_form43_declaration" -->
+        <!--     /> -->
+
+    </data>
+</openerp>
