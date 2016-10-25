@@ -1,19 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openerp>
     <data>
-        <record id="res_partner_wh_itbms" model="ir.ui.view">
-            <field name="name">res.partner.wh.itbms</field>
-            <field name="model">res.partner</field>
-            <field name="inherit_id" ref="l10n_pa_reports.res_partner_form_form43"/>
-            <field name="arch" type="xml">
-                <xpath expr="//page[@name='fiscal_information']" position="after">
-                    <newline/>
-                    <group col="6" colspan="2">
-                        <field name="wh_agent_itbms"/>
-                    </group>
-                </xpath>
-
-            </field>
-        </record>
     </data>
 </openerp>
