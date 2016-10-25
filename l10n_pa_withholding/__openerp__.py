@@ -9,6 +9,7 @@
     "license": "AGPL-3",
     "depends": [
             "l10n_pa_reports",
+            "sale",
     ],
     "demo": [
         'demo/demo.xml',
@@ -17,6 +18,7 @@
         'view/invoice_view.xml',
         'view/partner_view.xml',
         'view/res_company.xml',
+        'view/sale_order_view.xml',
     ],
     "test": [],
     "installable": True,
