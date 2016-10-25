@@ -16,6 +16,7 @@
     "data": [
         'view/invoice_view.xml',
         'view/partner_view.xml',
+        'view/res_company.xml',
     ],
     "test": [],
     "installable": True,
