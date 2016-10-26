@@ -8,7 +8,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//group[@name='account_grp']" position="after">
                     <group name="account_itbms" string="Accounting Information for ITBMS">
-                        <field name='wh_sale_tbms_account_id'/>
+                        <field name='wh_sale_itbms_account_id'/>
                     </group>
                 </xpath>
             </field>
