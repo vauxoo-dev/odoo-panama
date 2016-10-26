@@ -16,7 +16,7 @@ class AccountInvoice(models.Model):
         help="Link to the automatically generated Withholding Journal Entry.")
     # /!\ NOTE: This code will be regarded as duplicated
     l10n_pa_wh_subject = fields.Selection([
-        (0, 'No Aplica'),
+        ('na', 'No Aplica'),
         (1, 'Pago por Servicio Profesional al Estado 100%'),
         (2, 'Pago por Venta de Bienes/Servicios al Estado 50%'),
         (3, 'Pago o Acreditacion a No Domiciliado o Empresa Constituida en el'
@@ -95,11 +95,11 @@ class AccountInvoice(models.Model):
                 continue
             if invoice_brw.wh_move_id:
                 continue
-            if isinstance(invoice_brw.l10n_pa_wh_subject, bool):
+            if not invoice_brw.l10n_pa_wh_subject:
                 raise except_orm(
                     _('Error!'),
                     _('Please define a Withholding Subject to this invoice.'))
-            if invoice_brw.l10n_pa_wh_subject == 0:
+            if invoice_brw.l10n_pa_wh_subject == 'na':
                 continue
             ctx = dict(self._context, lang=invoice_brw.partner_id.lang)
             journal = invoice_brw.journal_id.with_context(ctx)

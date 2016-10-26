@@ -8,7 +8,7 @@ class SaleOrder(models.Model):
 
     # /!\ NOTE: This code will be regarded as duplicated
     l10n_pa_wh_subject = fields.Selection([
-        (0, 'No Aplica'),
+        ('na', 'No Aplica'),
         (1, 'Pago por Servicio Profesional al Estado 100%'),
         (2, 'Pago por Venta de Bienes/Servicios al Estado 50%'),
         (3, 'Pago o Acreditacion a No Domiciliado o Empresa Constituida en el'
