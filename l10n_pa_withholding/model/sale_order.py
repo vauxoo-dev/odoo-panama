@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from openerp import models, fields
+from openerp import models, fields, api
 
 
 class SaleOrder(models.Model):
@@ -22,3 +22,10 @@ class SaleOrder(models.Model):
         ('7', 'Pago a Comercio Afiliado a Sistema de TC/TD 50%')],
         string='ITBMS Withholding Subject',
         help='If Apply. Indicates how much ITBMS to withholding on Payment')
+
+    @api.model
+    def _prepare_invoice(self, order, lines):
+        invoice_vals = super(SaleOrder, self)._prepare_invoice(order, lines)
+        return dict(invoice_vals,
+                    wh_agent_itbms=order.wh_agent_itbms,
+                    l10n_pa_wh_subject=order.l10n_pa_wh_subject)
