@@ -85,30 +85,6 @@ class AccountInvoice(models.Model):
         return res
 
     @api.multi
-    def compute_tax_totals(self, company_currency, ref, ait):
-        total = 0
-        total_currency = 0
-        currency = self.currency_id.with_context(
-            date=self.date_invoice or fields.Date.context_today(self))
-        for line in ait:
-            line['ref'] = ref
-            line['currency_id'] = False
-            line['amount_currency'] = False
-            if self.currency_id != company_currency:
-                line['currency_id'] = currency.id
-                line['amount_currency'] = currency.round(line['price'])
-                line['price'] = currency.compute(
-                    line['price'], company_currency)
-            if self.type in ('out_invoice', 'in_refund'):
-                total += line['price']
-                total_currency += line['amount_currency'] or line['price']
-                line['price'] = - line['price']
-            else:
-                total -= line['price']
-                total_currency -= line['amount_currency'] or line['price']
-        return total, total_currency, ait
-
-    @api.multi
     def action_move_create_withholding(self):
         """Creates Withholding for taxes in invoice"""
         account_move = self.env['account.move']
@@ -130,7 +106,7 @@ class AccountInvoice(models.Model):
                 continue
 
             total, total_currency, ait = invoice_brw.with_context(
-                ctx).compute_tax_totals(company_currency, ref, ait)
+                ctx).compute_invoice_totals(company_currency, ref, ait)
 
             name = invoice_brw.supplier_invoice_number or \
                 invoice_brw.name or '/'
