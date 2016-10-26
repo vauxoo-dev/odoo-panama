@@ -39,7 +39,7 @@ class AccountInvoice(models.Model):
         return account_id.id
 
     @api.model
-    def wh_move_line_get_item(self, line):
+    def wh_move_line_get_item(self, line, wh_val):
         if line.invoice_id.type == 'out_invoice':
             sign = -1
         elif line.invoice_id.type == 'out_refund':
@@ -48,7 +48,7 @@ class AccountInvoice(models.Model):
             'type': 'src',
             'name': line.name.split('\n')[0][:64],
             'account_id': self.wh_tax_account(line),
-            'price': sign * line.amount,  # TODO: Insert Withheld value here!
+            'price': sign * line.amount * wh_val / 100.0,
             'tax_code_id': line.tax_code_id.id,
             'tax_amount': line.amount,
         }
@@ -75,7 +75,7 @@ class AccountInvoice(models.Model):
         }
 
     @api.model
-    def wh_move_line_get(self):
+    def wh_move_line_get(self, wh_val):
         # /!\ TODO: Invoice to be ommited for Withholding
         # return []
         # /!\ TODO: Determine if withholding will proceed because of the
@@ -88,8 +88,15 @@ class AccountInvoice(models.Model):
         for tax_brw in self.tax_line:
             if not tax_brw.amount:
                 continue
-            res.append(self.wh_move_line_get_item(tax_brw))
+            res.append(self.wh_move_line_get_item(tax_brw, wh_val))
         return res
+
+    @api.multi
+    def wh_subject_mapping(self, val):
+        res = dict([
+            ('1', 100), ('2', 50), ('3', 100),
+            ('4', 50), ('5', 2), ('6', 1), ('7', 50)])
+        return res.get(val, 0.0)
 
     @api.multi
     def action_move_create_withholding(self):
@@ -113,7 +120,8 @@ class AccountInvoice(models.Model):
 
             ref = invoice_brw.reference or invoice_brw.name,
             company_currency = invoice_brw.company_id.currency_id
-            ait = invoice_brw.wh_move_line_get()
+            wh = self.wh_subject_mapping(self.l10n_pa_wh_subject)
+            ait = invoice_brw.wh_move_line_get(wh)
 
             if not ait:
                 continue
@@ -121,15 +129,12 @@ class AccountInvoice(models.Model):
             total, total_currency, ait = invoice_brw.with_context(
                 ctx).compute_invoice_totals(company_currency, ref, ait)
 
-            name = invoice_brw.supplier_invoice_number or \
-                invoice_brw.name or '/'
-
             if total:
                 company_currency = invoice_brw.company_id.currency_id
                 diff_curr = invoice_brw.currency_id != company_currency
                 ait.append({
                     'type': 'dest',
-                    'name': name,
+                    'name': _('ITBMS Withheld on Invoice'),
                     'price': total,
                     'account_id': invoice_brw.account_id.id,
                     'date_maturity': invoice_brw.date_due,
