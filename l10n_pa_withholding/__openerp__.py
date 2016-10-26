@@ -19,6 +19,7 @@
         'view/partner_view.xml',
         'view/res_company.xml',
         'view/sale_order_view.xml',
+        'workflow/wh_action_server.xml',
     ],
     "test": [],
     "installable": True,
