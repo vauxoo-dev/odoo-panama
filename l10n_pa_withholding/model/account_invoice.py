@@ -1,7 +1,8 @@
 # coding: utf-8
 # Copyright 2016 Vauxoo (https://www.vauxoo.com) <info@vauxoo.com>
 from __future__ import division
-from openerp import api, fields, models
+from openerp import api, fields, models, _
+from openerp.exceptions import except_orm
 
 
 class AccountInvoice(models.Model):
@@ -93,6 +94,12 @@ class AccountInvoice(models.Model):
             if not invoice_brw.tax_line:
                 continue
             if invoice_brw.wh_move_id:
+                continue
+            if isinstance(invoice_brw.l10n_pa_wh_subject, bool):
+                raise except_orm(
+                    _('Error!'),
+                    _('Please define a Withholding Subject to this invoice.'))
+            if invoice_brw.l10n_pa_wh_subject == 0:
                 continue
             ctx = dict(self._context, lang=invoice_brw.partner_id.lang)
             journal = invoice_brw.journal_id.with_context(ctx)
