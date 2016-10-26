@@ -30,7 +30,13 @@ class AccountInvoice(models.Model):
 
     @api.model
     def wh_tax_account(self, line):
-        return line.account_id.id
+        account_id = line.invoice_id.company_id.wh_sale_itbms_account_id
+        if not account_id:
+            raise except_orm(
+                _('Error!'),
+                _('Please Define an Account to be used for withholding ITBMS '
+                  'on Customer Invoice on Your Company.'))
+        return account_id.id
 
     @api.model
     def wh_move_line_get_item(self, line):
