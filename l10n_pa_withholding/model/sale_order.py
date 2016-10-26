@@ -6,6 +6,9 @@ from openerp import models, fields
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    wh_agent_itbms = fields.Boolean(
+        string='ITBMS Withholding Agent',
+        help="Indicate if the Partner is a ITBMS Withholding Agent")
     # /!\ NOTE: This code will be regarded as duplicated
     l10n_pa_wh_subject = fields.Selection([
         ('na', 'No Aplica'),

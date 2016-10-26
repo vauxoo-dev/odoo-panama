@@ -9,6 +9,7 @@
                 <xpath expr="//page[@string='Other Info']" position="after">
                     <page string="Fiscal Info">
                         <group colspan='2'>
+                            <field name="wh_agent_itbms"/>
                             <field name="l10n_pa_wh_subject"/>
                             <field name="wh_move_id"/>
                         </group>

@@ -14,6 +14,9 @@ class AccountInvoice(models.Model):
         index=True,
         copy=False,
         help="Link to the automatically generated Withholding Journal Entry.")
+    wh_agent_itbms = fields.Boolean(
+        string='ITBMS Withholding Agent',
+        help="Indicate if the Partner is a ITBMS Withholding Agent")
     # /!\ NOTE: This code will be regarded as duplicated
     l10n_pa_wh_subject = fields.Selection([
         ('na', 'No Aplica'),
@@ -81,8 +84,6 @@ class AccountInvoice(models.Model):
         # /!\ TODO: Determine if withholding will proceed because of the
         # Withholding Agent Entitlement
         res = []
-        if self.type not in ('out_invoice', 'out_refund'):
-            return res
         if not self.tax_line:
             return res
         for tax_brw in self.tax_line:
@@ -104,7 +105,11 @@ class AccountInvoice(models.Model):
         account_move = self.env['account.move']
 
         for invoice_brw in self:
+            if invoice_brw.type not in ('out_invoice', 'out_refund'):
+                continue
             if not invoice_brw.tax_line:
+                continue
+            if not invoice_brw.wh_agent_itbms:
                 continue
             if invoice_brw.wh_move_id:
                 continue
