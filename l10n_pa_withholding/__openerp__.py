@@ -10,6 +10,7 @@
     "depends": [
             "l10n_pa_reports",
             "sale",
+            "stock",
     ],
     "demo": [
         'demo/demo.xml',
