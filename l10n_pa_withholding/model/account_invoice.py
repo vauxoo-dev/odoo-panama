@@ -33,11 +33,17 @@ class AccountInvoice(models.Model):
 
     @api.model
     def wh_move_line_get_item(self, line):
+        if line.invoice_id.type == 'out_invoice':
+            sign = -1
+        elif line.invoice_id.type == 'out_refund':
+            sign = 1
         return {
             'type': 'src',
             'name': line.name.split('\n')[0][:64],
             'account_id': self.wh_tax_account(line),
-            'price': line.amount,
+            'price': sign * line.amount,  # TODO: Insert Withheld value here!
+            'tax_code_id': line.tax_code_id.id,
+            'tax_amount': line.amount,
         }
 
     @api.model
@@ -63,10 +69,19 @@ class AccountInvoice(models.Model):
 
     @api.model
     def wh_move_line_get(self):
+        # /!\ TODO: Invoice to be ommited for Withholding
+        # return []
+        # /!\ TODO: Determine if withholding will proceed because of the
+        # Withholding Agent Entitlement
         res = []
+        if self.type not in ('out_invoice', 'out_refund'):
+            return res
+        if not self.tax_line:
+            return res
         for tax_brw in self.tax_line:
-            debit = self.wh_move_line_get_item(tax_brw)
-            res.append(debit)
+            if not tax_brw.amount:
+                continue
+            res.append(self.wh_move_line_get_item(tax_brw))
         return res
 
     @api.multi
@@ -110,6 +125,9 @@ class AccountInvoice(models.Model):
             ref = invoice_brw.reference or invoice_brw.name,
             company_currency = invoice_brw.company_id.currency_id
             ait = invoice_brw.wh_move_line_get()
+
+            if not ait:
+                continue
 
             total, total_currency, ait = invoice_brw.with_context(
                 ctx).compute_tax_totals(company_currency, ref, ait)
