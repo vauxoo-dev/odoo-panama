@@ -48,6 +48,21 @@ class TestWithholding(TransactionCase):
             'Journal Entry for Withholding should be Empty')
         return True
 
+    def test_create_an_invoice_with_taxes_no_wh(self):
+        """Test withholding in invoice with taxes but wh_agent_itbms=False"""
+        sale_id = self.ref('l10n_pa_withholding.so_02')
+        sale_brw = self.so_obj.browse(sale_id)
+
+        sale_brw.wh_agent_itbms = False
+        sale_brw.action_button_confirm()
+
+        inv = self.create_invoice_from_sales_order(sale_id)
+        inv.signal_workflow('invoice_open')
+        self.assertEquals(
+            bool(inv.wh_move_id), False,
+            'Journal Entry for Withholding should be Empty')
+        return True
+
     def test_propagate_fiscal_info_from_so_to_inv_via_picking(self):
         """Test that fiscal info is passed on to newly created invoice when
         invoicing from picking"""
