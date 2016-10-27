@@ -34,6 +34,20 @@ class TestWithholding(TransactionCase):
             'This should be "No Aplica" - "na"')
         return True
 
+    def test_create_an_invoice_with_without_wh(self):
+        """Test withholding in an invoice without taxes"""
+        self.sale_brw.l10n_pa_wh_subject = '7'
+        self.sale_brw.action_button_confirm()
+        self.assertEquals(self.sale_brw.state, 'manual', 'Wrong State on SO')
+        inv = self.create_invoice_from_sales_order(self.sale_id)
+        inv.signal_workflow('invoice_open')
+        self.assertEquals(
+            inv.state, 'open', 'Wrong State on Invoice it should be "open"')
+        self.assertEquals(
+            bool(inv.wh_move_id), False,
+            'Journal Entry for Withholding should be Empty')
+        return True
+
     def test_propagate_fiscal_info_from_so_to_inv_via_picking(self):
         """Test that fiscal info is passed on to newly created invoice when
         invoicing from picking"""
