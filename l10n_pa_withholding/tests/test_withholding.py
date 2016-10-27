@@ -15,14 +15,17 @@ class TestWithholding(TransactionCase):
         self.sale_id = self.ref('l10n_pa_withholding.so_01')
         self.sale_brw = self.so_obj.browse(self.sale_id)
 
+    def create_invoice_from_sales_order(self, sale_id):
+        sapi_brw = self.sapi_obj.create({'advance_payment_method': 'all'})
+        context = {'open_invoices': True, 'active_ids': [sale_id]}
+        res = sapi_brw.with_context(context).create_invoices()
+        return self.inv_obj.browse(res['res_id'])
+
     def test_propagate_fiscal_info_from_so_to_inv(self):
         """Test that fiscal info is passed on to newly created invoice"""
         self.sale_brw.action_button_confirm()
         self.assertEquals(self.sale_brw.state, 'manual', 'Wrong State on SO')
-        sapi_brw = self.sapi_obj.create({'advance_payment_method': 'all'})
-        context = {'open_invoices': True, 'active_ids': [self.sale_id]}
-        res = sapi_brw.with_context(context).create_invoices()
-        inv = self.inv_obj.browse(res['res_id'])
+        inv = self.create_invoice_from_sales_order(self.sale_id)
         self.assertEquals(
             inv.wh_agent_itbms, True,
             'This should be a Withholding Agent - True')
