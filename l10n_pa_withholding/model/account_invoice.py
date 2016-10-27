@@ -84,8 +84,6 @@ class AccountInvoice(models.Model):
         # /!\ TODO: Determine if withholding will proceed because of the
         # Withholding Agent Entitlement
         res = []
-        if not self.tax_line:
-            return res
         for tax_brw in self.tax_line:
             if not tax_brw.amount:
                 continue
