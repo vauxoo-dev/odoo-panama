@@ -23,6 +23,19 @@ class SaleOrder(models.Model):
         string='ITBMS Withholding Subject',
         help='If Apply. Indicates how much ITBMS to withholding on Payment')
 
+    @api.v7
+    def onchange_partner_id(self, cr, uid, ids, part, context=None):
+        res = super(SaleOrder, self).onchange_partner_id(
+            cr, uid, ids, part, context=context)
+        if not part:
+            return res
+        part = self.pool.get('res.partner').browse(
+            cr, uid, part, context=context)
+        part = part._find_accounting_partner(part)
+        res['value']['wh_agent_itbms'] = part.wh_agent_itbms
+        res['value']['l10n_pa_wh_subject'] = part.l10n_pa_wh_subject
+        return res
+
     @api.model
     def _prepare_invoice(self, order, lines):
         invoice_vals = super(SaleOrder, self)._prepare_invoice(order, lines)
