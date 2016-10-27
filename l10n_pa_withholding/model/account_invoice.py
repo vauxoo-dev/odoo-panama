@@ -74,7 +74,7 @@ class AccountInvoice(models.Model):
             'tax_amount': line.get('tax_amount', False),
             'ref': line.get('ref', False),
             'analytic_account_id': line.get('account_analytic_id', False),
-            'tax_line_id': line.get('tax_line_id', False),
+            # 'tax_line_id': line.get('tax_line_id', False),
         }
 
     @api.model
