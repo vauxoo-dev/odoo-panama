@@ -28,6 +28,8 @@ class SaleOrder(models.Model):
         res = super(SaleOrder, self).onchange_partner_id(
             cr, uid, ids, part, context=context)
         if not part:
+            res['value']['wh_agent_itbms'] = False
+            res['value']['l10n_pa_wh_subject'] = False
             return res
         part = self.pool.get('res.partner').browse(
             cr, uid, part, context=context)

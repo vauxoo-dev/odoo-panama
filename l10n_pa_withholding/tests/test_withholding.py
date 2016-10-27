@@ -29,3 +29,15 @@ class TestWithholding(TransactionCase):
             inv.l10n_pa_wh_subject, 'na',
             'This should be "No Aplica" - "na"')
         return True
+
+    def test_on_change_partner_id_on_sale_order(self):
+        """Test setting null partner on Sales Order"""
+        res = self.registry('sale.order').onchange_partner_id(
+            self.cr, self.uid, False, False, {})
+        self.assertEquals(
+            res['value']['wh_agent_itbms'], False,
+            'This should be a Withholding Agent - True')
+        self.assertEquals(
+            res['value']['l10n_pa_wh_subject'], False,
+            'This should be "Empty" - "False"')
+        return True
