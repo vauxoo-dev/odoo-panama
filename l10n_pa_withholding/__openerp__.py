@@ -11,6 +11,7 @@
             "account",
             "sale",
             "stock",
+            "vat_partitioned",
     ],
     "demo": [
         'demo/demo.xml',
