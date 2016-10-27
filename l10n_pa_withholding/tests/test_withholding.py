@@ -11,6 +11,7 @@ class TestWithholding(TransactionCase):
         self.so_obj = self.env['sale.order']
         self.sapi_obj = self.env['sale.advance.payment.inv']
         self.inv_obj = self.env['account.invoice']
+        self.sio_obj = self.env['stock.invoice.onshipping']
         self.sale_id = self.ref('l10n_pa_withholding.so_01')
         self.sale_brw = self.so_obj.browse(self.sale_id)
 
@@ -28,6 +29,33 @@ class TestWithholding(TransactionCase):
         self.assertEquals(
             inv.l10n_pa_wh_subject, 'na',
             'This should be "No Aplica" - "na"')
+        return True
+
+    def test_propagate_fiscal_info_from_so_to_inv_via_picking(self):
+        """Test that fiscal info is passed on to newly created invoice when
+        invoicing from picking"""
+
+        self.sale_brw.order_policy = 'picking'
+        self.sale_brw.wh_agent_itbms = False
+        self.sale_brw.l10n_pa_wh_subject = '7'
+        self.sale_brw.action_button_confirm()
+        self.assertEquals(self.sale_brw.state, 'progress', 'Wrong State on SO')
+
+        picking = self.sale_brw.picking_ids
+        self.assertEqual(1, len(picking))
+        picking.action_done()
+
+        sio_wzd = self.sio_obj.with_context({
+            'active_id': picking.id,
+            'active_ids': [picking.id],
+        }).create({})
+        inv = self.inv_obj.browse(sio_wzd.create_invoice())
+        self.assertEquals(
+            inv.wh_agent_itbms, False,
+            'This should not be a Withholding Agent - False')
+        self.assertEquals(
+            inv.l10n_pa_wh_subject, '7',
+            'This should be "7"')
         return True
 
     def test_on_change_partner_id_on_sale_order(self):
