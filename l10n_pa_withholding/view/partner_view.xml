@@ -4,13 +4,18 @@
         <record id="res_partner_wh_itbms_form" model="ir.ui.view">
             <field name="name">res.partner.form.wh.itbms</field>
             <field name="model">res.partner</field>
-            <field name="inherit_id" ref="l10n_pa_reports.res_partner_form_form43"/>
+            <field name="inherit_id" ref="base.view_partner_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//page[@name='fiscal_information']" position="inside">
-                    <group colspan='2'>
-                        <field name="wh_agent_itbms"/>
-                        <field name="l10n_pa_wh_subject"/>
-                    </group>
+                <xpath expr="//page[@name='sales_purchases']" position="after">
+                    <page name='fiscal_information' string="Fiscal Information">
+                        <group>
+                            <field name="wh_agent_itbms"/>
+                            <field name="l10n_pa_wh_subject"/>
+                            <field name="l10n_pa_entity" colspan="2"/>
+                            <field name="l10n_pa_concept"/>
+                            <field name="l10n_pa_prd_srv"/>
+                        </group>
+                    </page>
                 </xpath>
             </field>
         </record>

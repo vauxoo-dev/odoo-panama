@@ -8,7 +8,7 @@
     "website": "http://www.vauxoo.com/",
     "license": "AGPL-3",
     "depends": [
-            "l10n_pa_reports",
+            "account",
             "sale",
             "stock",
     ],
