@@ -1,5 +1,31 @@
 <?xml version="1.0" ?>
 <openerp>
     <data noupdate="0">
+        <record id="product01" model="product.product">
+           <field name="name">Targus Laptop 16" Bag</field>
+           <field name="type">product</field>
+           <field name="cost_method">average</field>
+           <field name="valuation">real_time</field>
+           <field name="standard_price">20</field>
+           <field name="property_stock_account_input" ref="account.o_expense"/>
+           <field name="property_stock_account_output" ref="account.o_income"/>
+        </record>
+        <record id="so_01" model="sale.order">
+            <field name="name">l10n_pa_withholding</field>
+            <field name="date_order" eval="datetime.now().strftime('%Y-%m-%d')" />
+            <field name="partner_id" ref="base.res_partner_12"/>
+            <field name="currency_id" ref="base.EUR"/>
+            <field name="pricelist_id" ref="product.list0"/>
+            <field name="order_policy">manual</field>
+            <field name="wh_agent_itbms" eval="True"/>
+            <field name="l10n_pa_wh_subject">na</field>
+        </record>
+        <record id="so_01_line_01" model="sale.order.line">
+            <field name="name">so_01_line_01</field>
+            <field name="order_id" ref="so_01"/>
+            <field name="product_id" ref="product01"/>
+            <field name="product_uom_qty">1</field>
+            <field name="price_unit">32.0</field>
+        </record>
     </data>
 </openerp>
