@@ -8,9 +8,7 @@
     "website": "http://www.vauxoo.com/",
     "license": "AGPL-3",
     "depends": [
-            "account",
-            "sale",
-            "stock",
+            "sale_stock",
             "vat_partitioned",
     ],
     "demo": [
