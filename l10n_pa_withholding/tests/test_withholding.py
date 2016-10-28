@@ -77,6 +77,14 @@ class TestWithholding(TransactionCase):
         self.assertEquals(
             bool(inv.wh_move_id), False,
             'Journal Entry for Withholding should be Empty')
+
+        inv.wihholding_reconciliation()
+
+        aml_ids = [line.id for line in inv.payment_ids]
+        self.assertEquals(
+            len(aml_ids), 0,
+            'There should be no payment in the Invoice after reconciling')
+
         return True
 
     def test_05_create_an_invoice_with_taxes_wh(self):
@@ -92,14 +100,22 @@ class TestWithholding(TransactionCase):
         self.assertEquals(
             bool(inv.wh_move_id), True,
             'Journal Entry for Withholding should be Filled')
+
         aml_ids = [True
                    for line in inv.wh_move_id.line_id
                    if line.account_id.id == inv.account_id.id and
                    line.credit > 0]
-
         self.assertEquals(
             any(aml_ids), True,
             'Withholding Invoice should decrease Receivable on Customer')
+
+        inv.wihholding_reconciliation()
+
+        aml_ids = [line.id for line in inv.payment_ids]
+        self.assertEquals(
+            len(aml_ids), 1,
+            'There should be a payment in the Invoice after reconciling')
+
         return True
 
     def test_06_apply_wh_on_a_refund(self):
