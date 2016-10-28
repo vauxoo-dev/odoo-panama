@@ -118,6 +118,42 @@ class TestWithholding(TransactionCase):
 
         return True
 
+    def test_05_create_an_invoice_with_taxes_wh_no_receivable(self):
+        """Test withholding in invoice with taxes and wh_agent_itbms=True
+        And there is no change on Customer's Receivable Account"""
+        sale_id = self.ref('l10n_pa_withholding.so_04')
+        sale_brw = self.so_obj.browse(sale_id)
+
+        sale_brw.action_button_confirm()
+
+        inv = self.create_invoice_from_sales_order(sale_id)
+        inv.company_id.wh_sale_itbms_account_id = self.ref('account.iva')
+        inv.signal_workflow('invoice_open')
+        self.assertEquals(
+            bool(inv.wh_move_id), True,
+            'Journal Entry for Withholding should be Filled')
+
+        inv.wihholding_reconciliation()
+        aml_ids = [line.id for line in inv.payment_ids]
+        self.assertEquals(
+            len(aml_ids), 0,
+            'There should be no payment in the Invoice after reconciling')
+
+        aml_ids = [True
+                   for line in inv.wh_move_id.line_id
+                   if line.account_id.id == inv.account_id.id]
+        self.assertEquals(
+            any(aml_ids), False,
+            'Withholding Invoice should not change Receivable on Customer')
+
+        aml_ids = [True
+                   for line in inv.wh_move_id.line_id
+                   if line.account_id.id != inv.account_id.id]
+        self.assertEquals(
+            len(aml_ids), 2,
+            'Withholding Invoice should have Two Journal Items')
+        return True
+
     def test_06_apply_wh_on_a_refund(self):
         """Test withholding in a refund"""
         sale_id = self.ref('l10n_pa_withholding.so_02')

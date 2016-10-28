@@ -14,6 +14,12 @@
         <record id="sale_tax_code_exempt" model="account.tax.code">
             <field name="name">Impuesto Exento - Ventas (test)</field>
         </record>
+        <record id="sale_neg_base_code" model="account.tax.code">
+            <field name="name">Base de Impuestos - Ventas Negativo (test)</field>
+        </record>
+        <record id="sale_neg_tax_code" model="account.tax.code">
+            <field name="name">Impuesto - Ventas Negativo (test)</field>
+        </record>
 
         <!-- Creating taxes for OPaL -->
         <record id="itbms_sale1" model="account.tax">
@@ -33,6 +39,25 @@
             <field name="ref_tax_code_id" ref="sale_tax_code"/>
             <field name="tax_sign">1</field>
             <field name="ref_tax_sign">1</field>
+            <field name="applicable_type">true</field>
+        </record>
+        <record id="itbms_sale_neg" model="account.tax">
+            <field name="name">ITBMS - -7% - Ventas (test)</field>
+            <field name="description">ITBMS - -7% - Ventas (test)</field>
+            <field name="type_tax_use">sale</field>
+            <field name="type">percent</field>
+            <field name="amount">-0.07</field>
+            <field name="sequence">10</field>
+            <field name="account_collected_id" ref="account.ova"/>
+            <field name="account_paid_id" ref="account.ova"/>
+            <field name="base_code_id" ref="sale_neg_base_code"/>
+            <field name="ref_base_code_id" ref="sale_neg_base_code"/>
+            <field name="base_sign">1</field>
+            <field name="ref_base_sign">1</field>
+            <field name="tax_code_id" ref="sale_neg_tax_code"/>
+            <field name="ref_tax_code_id" ref="sale_neg_tax_code"/>
+            <field name="tax_sign">-1</field>
+            <field name="ref_tax_sign">-1</field>
             <field name="applicable_type">true</field>
         </record>
         <record id="itbms_sale_exempt" model="account.tax">
@@ -116,6 +141,24 @@
             <field name="product_uom_qty">1</field>
             <field name="price_unit">32.0</field>
             <field name="tax_id" eval="[(4,ref('itbms_sale_exempt'))]"/>
+        </record>
+        <record id="so_04" model="sale.order">
+            <field name="name">l10n_pa_withholding_04</field>
+            <field name="date_order" eval="datetime.now().strftime('%Y-%m-%d')" />
+            <field name="partner_id" ref="base.res_partner_12"/>
+            <field name="currency_id" ref="base.EUR"/>
+            <field name="pricelist_id" ref="product.list0"/>
+            <field name="order_policy">manual</field>
+            <field name="wh_agent_itbms" eval="True"/>
+            <field name="l10n_pa_wh_subject">7</field>
+        </record>
+        <record id="so_04_line_01" model="sale.order.line">
+            <field name="name">so_04_line_01</field>
+            <field name="order_id" ref="so_04"/>
+            <field name="product_id" ref="product01"/>
+            <field name="product_uom_qty">1</field>
+            <field name="price_unit">32.0</field>
+            <field name="tax_id" eval="[(4,ref('itbms_sale1')),(4,ref('itbms_sale_neg'))]"/>
         </record>
     </data>
 </openerp>
