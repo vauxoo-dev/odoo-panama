@@ -169,3 +169,28 @@ class AccountInvoice(models.Model):
             move.post()
         # TODO self._log_event()
         return True
+
+    @api.multi
+    def wihholding_reconciliation(self):
+        """Reconciles Journal Items from wh_move_id with those in move_id on
+        Invoice"""
+
+        for inv_brw in self:
+            move_ids = [move.id or False
+                        for move in (inv_brw.move_id, inv_brw.wh_move_id)
+                        if move]
+
+            if not all(move_ids):
+                continue
+
+            line_ids = [line.id
+                        for move2 in (inv_brw.move_id, inv_brw.wh_move_id)
+                        for line in move2.line_id
+                        if line.account_id.id == inv_brw.account_id.id]
+
+            if len(line_ids) < 2:
+                continue
+            line_ids = self.env['account.move.line'].browse(line_ids)
+            line_ids.reconcile_partial()
+
+        return True
