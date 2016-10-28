@@ -108,6 +108,23 @@ class TestWithholding(TransactionCase):
 
         return True
 
+    def test_no_wh_subject_set(self):
+        """Test withholding in invoice with taxes and wh_agent_itbms=True
+        No Withholding Subject set in the Invoice"""
+        sale_id = self.ref('l10n_pa_withholding.so_02')
+        sale_brw = self.so_obj.browse(sale_id)
+
+        sale_brw.action_button_confirm()
+
+        inv = self.create_invoice_from_sales_order(sale_id)
+        inv.company_id.wh_sale_itbms_account_id = self.ref('account.iva')
+        inv.l10n_pa_wh_subject = False
+
+        with self.assertRaises(except_orm):
+            inv.signal_workflow('invoice_open')
+
+        return True
+
     def test_create_an_exempt_invoice_with_taxes_no_wh(self):
         """Test withholding in exempt invoice with taxes and
         wh_agent_itbms=True"""
