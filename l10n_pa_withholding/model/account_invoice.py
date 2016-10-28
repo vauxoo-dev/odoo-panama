@@ -6,7 +6,8 @@ from openerp.exceptions import except_orm
 
 
 class AccountInvoice(models.Model):
-    _inherit = 'account.invoice'
+    _name = 'account.invoice'
+    _inherit = ['account.invoice', 'l10n.pa.common.abstract']
     wh_move_id = fields.Many2one(
         'account.move',
         string='Withholding Journal Entry',
@@ -14,22 +15,6 @@ class AccountInvoice(models.Model):
         index=True,
         copy=False,
         help="Link to the automatically generated Withholding Journal Entry.")
-    wh_agent_itbms = fields.Boolean(
-        string='ITBMS Withholding Agent',
-        help="Indicate if the Partner is a ITBMS Withholding Agent")
-    # /!\ NOTE: This code will be regarded as duplicated
-    l10n_pa_wh_subject = fields.Selection([
-        ('na', 'No Aplica'),
-        ('1', 'Pago por Servicio Profesional al Estado 100%'),
-        ('2', 'Pago por Venta de Bienes/Servicios al Estado 50%'),
-        ('3', 'Pago o Acreditacion a No Domiciliado o Empresa Constituida en'
-         ' el Exterior 100%'),
-        ('4', 'Pago o Acreditacion por Compra de Bienes/Servicios 50%'),
-        ('5', 'Pago a Comercio Afiliado a Sistema de TC/TD 2%'),
-        ('6', 'Pago a Comercio Afiliado a Sistema de TC/TD 1%'),
-        ('7', 'Pago a Comercio Afiliado a Sistema de TC/TD 50%')],
-        string='ITBMS Withholding Subject',
-        help='If Apply. Indicates how much ITBMS to withholding on Payment')
 
     @api.model
     def wh_tax_account(self, line):
