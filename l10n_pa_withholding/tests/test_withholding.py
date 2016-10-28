@@ -1,6 +1,7 @@
 # coding: utf-8
 # Copyright 2016 Vauxoo (https://www.vauxoo.com) <info@vauxoo.com>
 
+from openerp.exceptions import except_orm
 from openerp.tests.common import TransactionCase
 
 
@@ -90,6 +91,56 @@ class TestWithholding(TransactionCase):
         self.assertEquals(
             bool(inv.wh_move_id), True,
             'Journal Entry for Withholding should be Filled')
+        return True
+
+    def test_accounting_info_on_company(self):
+        """Test withholding in invoice with taxes and wh_agent_itbms=True
+        Missing Accounting Information on Company"""
+        sale_id = self.ref('l10n_pa_withholding.so_02')
+        sale_brw = self.so_obj.browse(sale_id)
+
+        sale_brw.action_button_confirm()
+
+        inv = self.create_invoice_from_sales_order(sale_id)
+
+        with self.assertRaises(except_orm):
+            inv.signal_workflow('invoice_open')
+
+        return True
+
+    def test_create_an_exempt_invoice_with_taxes_no_wh(self):
+        """Test withholding in exempt invoice with taxes and
+        wh_agent_itbms=True"""
+        sale_id = self.ref('l10n_pa_withholding.so_02')
+        sale_brw = self.so_obj.browse(sale_id)
+
+        sale_brw.action_button_confirm()
+
+        inv = self.create_invoice_from_sales_order(sale_id)
+        inv.l10n_pa_wh_subject = 'na'
+        inv.company_id.wh_sale_itbms_account_id = self.ref('account.iva')
+        inv.signal_workflow('invoice_open')
+        self.assertEquals(
+            bool(inv.wh_move_id), False,
+            'Journal Entry for Withholding should be Empty')
+        return True
+
+    def test_already_withheld_invoice(self):
+        """Test Already Withheld Invoice"""
+        sale_id = self.ref('l10n_pa_withholding.so_02')
+        sale_brw = self.so_obj.browse(sale_id)
+
+        sale_brw.action_button_confirm()
+
+        inv = self.create_invoice_from_sales_order(sale_id)
+        inv.company_id.wh_sale_itbms_account_id = self.ref('account.iva')
+        inv.signal_workflow('invoice_open')
+        wh_move_id_1 = inv.wh_move_id.id
+        inv.action_move_create_withholding()
+        wh_move_id_2 = inv.wh_move_id.id
+        self.assertEquals(
+            wh_move_id_2, wh_move_id_1,
+            'Journal Entry for Withholding should be the same')
         return True
 
     def test_propagate_fiscal_info_from_so_to_inv_via_picking(self):
