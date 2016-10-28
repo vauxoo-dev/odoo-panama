@@ -23,7 +23,7 @@ class TestWithholding(TransactionCase):
         res = sapi_brw.with_context(context).create_invoices()
         return self.inv_obj.browse(res['res_id'])
 
-    def test_propagate_fiscal_info_from_so_to_inv(self):
+    def test_01_propagate_fiscal_info_from_so_to_inv(self):
         """Test that fiscal info is passed on to newly created invoice"""
         self.sale_brw.action_button_confirm()
         self.assertEquals(self.sale_brw.state, 'manual', 'Wrong State on SO')
@@ -36,7 +36,7 @@ class TestWithholding(TransactionCase):
             'This should be "No Aplica" - "na"')
         return True
 
-    def test_create_an_invoice_with_without_wh(self):
+    def test_02_create_an_invoice_with_without_wh(self):
         """Test withholding in an invoice without taxes"""
         self.sale_brw.l10n_pa_wh_subject = '7'
         self.sale_brw.action_button_confirm()
@@ -50,7 +50,7 @@ class TestWithholding(TransactionCase):
             'Journal Entry for Withholding should be Empty')
         return True
 
-    def test_create_an_invoice_with_taxes_no_wh(self):
+    def test_03_create_an_invoice_with_taxes_no_wh(self):
         """Test withholding in invoice with taxes but wh_agent_itbms=False"""
         sale_id = self.ref('l10n_pa_withholding.so_02')
         sale_brw = self.so_obj.browse(sale_id)
@@ -65,7 +65,7 @@ class TestWithholding(TransactionCase):
             'Journal Entry for Withholding should be Empty')
         return True
 
-    def test_create_an_invoice_with_exempt_no_wh(self):
+    def test_04_create_an_invoice_with_exempt_no_wh(self):
         """Test Withholding in exempt taxed invoice and wh_agent_itbms=True"""
         sale_id = self.ref('l10n_pa_withholding.so_03')
         sale_brw = self.so_obj.browse(sale_id)
@@ -79,7 +79,7 @@ class TestWithholding(TransactionCase):
             'Journal Entry for Withholding should be Empty')
         return True
 
-    def test_create_an_invoice_with_taxes_wh(self):
+    def test_05_create_an_invoice_with_taxes_wh(self):
         """Test withholding in invoice with taxes and wh_agent_itbms=True"""
         sale_id = self.ref('l10n_pa_withholding.so_02')
         sale_brw = self.so_obj.browse(sale_id)
@@ -102,7 +102,7 @@ class TestWithholding(TransactionCase):
             'Withholding Refund should increase Receivable on Customer')
         return True
 
-    def test_apply_wh_on_a_refund(self):
+    def test_06_apply_wh_on_a_refund(self):
         """Test withholding in a refund"""
         sale_id = self.ref('l10n_pa_withholding.so_02')
         sale_brw = self.so_obj.browse(sale_id)
@@ -141,7 +141,7 @@ class TestWithholding(TransactionCase):
             'Withholding Refund should increase Receivable on Customer')
         return True
 
-    def test_accounting_info_on_company(self):
+    def test_07_accounting_info_on_company(self):
         """Test withholding in invoice with taxes and wh_agent_itbms=True
         Missing Accounting Information on Company"""
         sale_id = self.ref('l10n_pa_withholding.so_02')
@@ -156,7 +156,7 @@ class TestWithholding(TransactionCase):
 
         return True
 
-    def test_no_wh_subject_set(self):
+    def test_08_no_wh_subject_set(self):
         """Test withholding in invoice with taxes and wh_agent_itbms=True
         No Withholding Subject set in the Invoice"""
         sale_id = self.ref('l10n_pa_withholding.so_02')
@@ -173,7 +173,7 @@ class TestWithholding(TransactionCase):
 
         return True
 
-    def test_create_an_exempt_invoice_with_taxes_no_wh(self):
+    def test_09_create_an_exempt_invoice_with_taxes_no_wh(self):
         """Test withholding in exempt invoice with taxes and
         wh_agent_itbms=True"""
         sale_id = self.ref('l10n_pa_withholding.so_02')
@@ -190,7 +190,7 @@ class TestWithholding(TransactionCase):
             'Journal Entry for Withholding should be Empty')
         return True
 
-    def test_already_withheld_invoice(self):
+    def test_10_already_withheld_invoice(self):
         """Test Already Withheld Invoice"""
         sale_id = self.ref('l10n_pa_withholding.so_02')
         sale_brw = self.so_obj.browse(sale_id)
@@ -208,7 +208,7 @@ class TestWithholding(TransactionCase):
             'Journal Entry for Withholding should be the same')
         return True
 
-    def test_propagate_fiscal_info_from_so_to_inv_via_picking(self):
+    def test_11_propagate_fiscal_info_from_so_to_inv_via_picking(self):
         """Test that fiscal info is passed on to newly created invoice when
         invoicing from picking"""
 
@@ -235,7 +235,7 @@ class TestWithholding(TransactionCase):
             'This should be "7"')
         return True
 
-    def test_on_change_partner_id_on_sale_order(self):
+    def test_12_on_change_partner_id_on_sale_order(self):
         """Test setting null partner on Sales Order"""
         res = self.registry('sale.order').onchange_partner_id(
             self.cr, self.uid, False, False, {})
