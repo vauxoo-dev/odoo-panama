@@ -177,8 +177,7 @@ class AccountInvoice(models.Model):
 
         for inv_brw in self:
             move_ids = [move.id or False
-                        for move in (inv_brw.move_id, inv_brw.wh_move_id)
-                        if move]
+                        for move in (inv_brw.move_id, inv_brw.wh_move_id)]
 
             if not all(move_ids):
                 continue
