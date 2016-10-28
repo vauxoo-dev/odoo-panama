@@ -99,7 +99,7 @@ class TestWithholding(TransactionCase):
 
         self.assertEquals(
             any(aml_ids), True,
-            'Withholding Refund should increase Receivable on Customer')
+            'Withholding Invoice should decrease Receivable on Customer')
         return True
 
     def test_06_apply_wh_on_a_refund(self):
@@ -121,8 +121,13 @@ class TestWithholding(TransactionCase):
         refund_id = refund_id.get('domain')[1][2]
         refund_brw = self.inv_obj.browse(refund_id)
 
-        refund_brw.wh_agent_itbms = True
-        refund_brw.l10n_pa_wh_subject = '7'
+        self.assertEquals(
+            refund_brw.wh_agent_itbms, True,
+            'This should not be a Withholding Agent - True')
+        self.assertEquals(
+            refund_brw.l10n_pa_wh_subject, '7',
+            'This should be "7"')
+
         refund_brw.signal_workflow('invoice_open')
 
         self.assertEquals(
