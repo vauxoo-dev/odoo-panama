@@ -15,6 +15,7 @@ class TestWithholding(TransactionCase):
         self.sio_obj = self.env['stock.invoice.onshipping']
         self.sale_id = self.ref('l10n_pa_withholding.so_01')
         self.sale_brw = self.so_obj.browse(self.sale_id)
+        self.refund_wzd_obj = self.env['account.invoice.refund']
 
     def create_invoice_from_sales_order(self, sale_id):
         sapi_brw = self.sapi_obj.create({'advance_payment_method': 'all'})
@@ -91,6 +92,53 @@ class TestWithholding(TransactionCase):
         self.assertEquals(
             bool(inv.wh_move_id), True,
             'Journal Entry for Withholding should be Filled')
+        aml_ids = [True
+                   for line in inv.wh_move_id.line_id
+                   if line.account_id.id == inv.account_id.id and
+                   line.credit > 0]
+
+        self.assertEquals(
+            any(aml_ids), True,
+            'Withholding Refund should increase Receivable on Customer')
+        return True
+
+    def test_apply_wh_on_a_refund(self):
+        """Test withholding in a refund"""
+        sale_id = self.ref('l10n_pa_withholding.so_02')
+        sale_brw = self.so_obj.browse(sale_id)
+
+        sale_brw.action_button_confirm()
+
+        inv = self.create_invoice_from_sales_order(sale_id)
+        inv.company_id.wh_sale_itbms_account_id = self.ref('account.iva')
+        inv.signal_workflow('invoice_open')
+
+        refund_id = self.refund_wzd_obj.with_context(
+            {'active_ids': [inv.id]}).create({
+                'filter_refund': 'refund',
+            })
+        refund_id = refund_id.invoice_refund()
+        refund_id = refund_id.get('domain')[1][2]
+        refund_brw = self.inv_obj.browse(refund_id)
+
+        refund_brw.wh_agent_itbms = True
+        refund_brw.l10n_pa_wh_subject = '7'
+        refund_brw.signal_workflow('invoice_open')
+
+        self.assertEquals(
+            refund_brw.state, 'open',
+            'State should be "open" on Refund')
+        self.assertEquals(
+            bool(refund_brw.wh_move_id), True,
+            'Journal Entry for Withholding should be Filled on Refund')
+
+        aml_refund_ids = [True
+                          for line in refund_brw.wh_move_id.line_id
+                          if line.account_id.id == inv.account_id.id and
+                          line.debit > 0]
+        self.assertEquals(
+            any(aml_refund_ids), True,
+            'Withholding Refund should increase Receivable on Customer')
         return True
 
     def test_accounting_info_on_company(self):

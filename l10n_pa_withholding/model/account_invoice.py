@@ -43,10 +43,7 @@ class AccountInvoice(models.Model):
 
     @api.model
     def wh_move_line_get_item(self, line, wh_val):
-        if line.invoice_id.type == 'out_invoice':
-            sign = -1
-        elif line.invoice_id.type == 'out_refund':
-            sign = 1
+        sign = -1 if 'out' in line.invoice_id.type else 1
         return {
             'type': 'src',
             'name': line.name.split('\n')[0][:64],
