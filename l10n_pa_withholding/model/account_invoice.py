@@ -142,39 +142,24 @@ class AccountInvoice(models.Model):
                 (0, 0,
                  self.wh_line_get_convert(l, part.id, date)) for l in ait]
 
-            # line = invoice_brw.finalize_tax_move_lines(line)
-
             move_vals = {
                 'ref': invoice_brw.reference or invoice_brw.name,
                 'line_id': line,
                 'journal_id': journal.id,
                 'date': date,
                 'company_id': invoice_brw.company_id.id,
-                'name': '%s-WH' % invoice_brw.move_id.name,
             }
             ctx['company_id'] = invoice_brw.company_id.id
-            period = invoice_brw.period_id.with_context(ctx).find(date)[:1]
-            if period:
-                move_vals['period_id'] = period.id
-                for i in line:
-                    i[2]['period_id'] = period.id
+
+            move_vals['period_id'] = invoice_brw.period_id.id
+            for i in line:
+                i[2]['period_id'] = invoice_brw.period_id.id
 
             ctx_nolang = ctx.copy()
             ctx_nolang.pop('lang', None)
             move = account_move.with_context(ctx_nolang).create(move_vals)
 
-            # make the tax point to that move
-            vals = {
-                'wh_move_id': move.id,
-                'period_id': period.id,
-            }
-            invoice_brw.with_context(ctx).write(vals)
-            # Pass tax in context in method post: used if you want to get
-            # the same
-            # account move reference when creating the same tax after a
-            # cancelled one:
-            move.post()
-        # TODO self._log_event()
+            invoice_brw.write({'wh_move_id': move.id})
         return True
 
     @api.multi
