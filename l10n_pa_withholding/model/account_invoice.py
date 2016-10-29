@@ -189,6 +189,12 @@ class AccountInvoice(models.Model):
 
             if len(line_ids) < 2:
                 continue
+
+            # /!\ NOTE: There could be some payments in the invoice let us
+            # reconcile them too
+            line_ids += [lin2.id for lin2 in inv_brw.payment_ids]
+            line_ids = list(set(line_ids))
+
             line_ids = self.env['account.move.line'].browse(line_ids)
             line_ids.reconcile_partial()
 
