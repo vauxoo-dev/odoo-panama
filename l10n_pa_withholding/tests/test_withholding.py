@@ -73,6 +73,8 @@ class TestWithholding(TransactionCase):
         sale_brw.action_button_confirm()
 
         inv = self.create_invoice_from_sales_order(sale_id)
+        inv.company_id.wh_sale_itbms_journal_id = self.ref(
+            'account.miscellaneous_journal')
         inv.signal_workflow('invoice_open')
         self.assertEquals(
             bool(inv.wh_move_id), False,
@@ -96,6 +98,8 @@ class TestWithholding(TransactionCase):
 
         inv = self.create_invoice_from_sales_order(sale_id)
         inv.company_id.wh_sale_itbms_account_id = self.ref('account.iva')
+        inv.company_id.wh_sale_itbms_journal_id = self.ref(
+            'account.miscellaneous_journal')
         inv.signal_workflow('invoice_open')
         self.assertEquals(
             bool(inv.wh_move_id), True,
@@ -128,6 +132,8 @@ class TestWithholding(TransactionCase):
 
         inv = self.create_invoice_from_sales_order(sale_id)
         inv.company_id.wh_sale_itbms_account_id = self.ref('account.iva')
+        inv.company_id.wh_sale_itbms_journal_id = self.ref(
+            'account.miscellaneous_journal')
         inv.signal_workflow('invoice_open')
         self.assertEquals(
             bool(inv.wh_move_id), True,
@@ -163,6 +169,8 @@ class TestWithholding(TransactionCase):
 
         inv = self.create_invoice_from_sales_order(sale_id)
         inv.company_id.wh_sale_itbms_account_id = self.ref('account.iva')
+        inv.company_id.wh_sale_itbms_journal_id = self.ref(
+            'account.miscellaneous_journal')
         inv.signal_workflow('invoice_open')
 
         refund_id = self.refund_wzd_obj.with_context(
@@ -198,9 +206,9 @@ class TestWithholding(TransactionCase):
             'Withholding Refund should increase Receivable on Customer')
         return True
 
-    def test_07_accounting_info_on_company(self):
+    def test_07_accounting_info_on_company_journal(self):
         """Test withholding in invoice with taxes and wh_agent_itbms=True
-        Missing Accounting Information on Company"""
+        Missing Accounting Information on Company (Journal)"""
         sale_id = self.ref('l10n_pa_withholding.so_02')
         sale_brw = self.so_obj.browse(sale_id)
 
@@ -210,7 +218,23 @@ class TestWithholding(TransactionCase):
 
         with self.assertRaises(except_orm):
             inv.signal_workflow('invoice_open')
+        return True
 
+    def test_07_accounting_info_on_company_account(self):
+        """Test withholding in invoice with taxes and wh_agent_itbms=True
+        Missing Accounting Information on Company (Account)"""
+        sale_id = self.ref('l10n_pa_withholding.so_02')
+        sale_brw = self.so_obj.browse(sale_id)
+
+        sale_brw.action_button_confirm()
+
+        inv = self.create_invoice_from_sales_order(sale_id)
+
+        inv.company_id.wh_sale_itbms_journal_id = self.ref(
+            'account.miscellaneous_journal')
+
+        with self.assertRaises(except_orm):
+            inv.signal_workflow('invoice_open')
         return True
 
     def test_08_no_wh_subject_set(self):
@@ -223,6 +247,8 @@ class TestWithholding(TransactionCase):
 
         inv = self.create_invoice_from_sales_order(sale_id)
         inv.company_id.wh_sale_itbms_account_id = self.ref('account.iva')
+        inv.company_id.wh_sale_itbms_journal_id = self.ref(
+            'account.miscellaneous_journal')
         inv.l10n_pa_wh_subject = False
 
         with self.assertRaises(except_orm):
@@ -241,6 +267,8 @@ class TestWithholding(TransactionCase):
         inv = self.create_invoice_from_sales_order(sale_id)
         inv.l10n_pa_wh_subject = 'na'
         inv.company_id.wh_sale_itbms_account_id = self.ref('account.iva')
+        inv.company_id.wh_sale_itbms_journal_id = self.ref(
+            'account.miscellaneous_journal')
         inv.signal_workflow('invoice_open')
         self.assertEquals(
             bool(inv.wh_move_id), False,
@@ -256,6 +284,8 @@ class TestWithholding(TransactionCase):
 
         inv = self.create_invoice_from_sales_order(sale_id)
         inv.company_id.wh_sale_itbms_account_id = self.ref('account.iva')
+        inv.company_id.wh_sale_itbms_journal_id = self.ref(
+            'account.miscellaneous_journal')
         inv.signal_workflow('invoice_open')
         wh_move_id_1 = inv.wh_move_id.id
         inv.action_move_create_withholding()

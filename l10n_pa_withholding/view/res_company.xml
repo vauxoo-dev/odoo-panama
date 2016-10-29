@@ -9,6 +9,7 @@
                 <xpath expr="//group[@name='account_grp']" position="after">
                     <group name="account_itbms" string="Accounting Information for ITBMS">
                         <field name='wh_sale_itbms_account_id'/>
+                        <field name='wh_sale_itbms_journal_id'/>
                     </group>
                 </xpath>
             </field>

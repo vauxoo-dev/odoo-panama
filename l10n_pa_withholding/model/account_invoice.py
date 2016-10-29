@@ -99,8 +99,15 @@ class AccountInvoice(models.Model):
                     _('Please define a Withholding Subject to this invoice.'))
             if invoice_brw.l10n_pa_wh_subject == 'na':
                 continue
+
+            journal = invoice_brw.company_id.wh_sale_itbms_journal_id
+            if not journal:
+                raise except_orm(
+                    _('Error!'),
+                    _('Please Define a Journal to be used for withholding '
+                      'ITBMS on Customer Invoice on Your Company.'))
+
             ctx = dict(self._context, lang=invoice_brw.partner_id.lang)
-            journal = invoice_brw.journal_id.with_context(ctx)
             date = invoice_brw.date_invoice
 
             ref = invoice_brw.reference or invoice_brw.name,
