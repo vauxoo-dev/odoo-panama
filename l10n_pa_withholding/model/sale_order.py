@@ -7,16 +7,14 @@ class SaleOrder(models.Model):
     _name = 'sale.order'
     _inherit = ['sale.order', 'l10n.pa.common.abstract']
 
-    @api.v7
-    def onchange_partner_id(self, cr, uid, ids, part, context=None):
-        res = super(SaleOrder, self).onchange_partner_id(
-            cr, uid, ids, part, context=context)
+    @api.multi
+    def onchange_partner_id(self, part):
+        res = super(SaleOrder, self).onchange_partner_id(part)
         if not part:
             res['value']['wh_agent_itbms'] = False
             res['value']['l10n_pa_wh_subject'] = False
             return res
-        part = self.pool.get('res.partner').browse(
-            cr, uid, part, context=context)
+        part = self.env['res.partner'].browse(part)
         part = part._find_accounting_partner(part)
         res['value']['wh_agent_itbms'] = part.wh_agent_itbms
         res['value']['l10n_pa_wh_subject'] = part.l10n_pa_wh_subject
