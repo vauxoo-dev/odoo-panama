@@ -15,6 +15,7 @@
         'demo/demo.xml',
     ],
     "data": [
+        'view/account_view.xml',
         'view/invoice_view.xml',
         'view/partner_view.xml',
         'view/res_company.xml',
