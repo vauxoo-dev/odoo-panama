@@ -287,3 +287,4 @@ class AccountInvoiceTaxWh(models.Model):
             tax_val['tax_amount'] = currency.round(tax_val['tax_amount'])
 
         return tax_grouped
+
