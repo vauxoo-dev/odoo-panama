@@ -15,6 +15,9 @@ class AccountInvoice(models.Model):
         index=True,
         copy=False,
         help="Link to the automatically generated Withholding Journal Entry.")
+    wh_tax_line = fields.One2many(
+        'account.invoice.tax.wh', 'invoice_id', string='Wh Tax Lines',
+        readonly=True, copy=False, help='Withheld Tax Lines')
 
     @api.model
     def wh_tax_account(self, line):
@@ -66,7 +69,7 @@ class AccountInvoice(models.Model):
         # /!\ TODO: Determine if withholding will proceed because of the
         # Withholding Agent Entitlement
         res = []
-        for tax_brw in self.tax_line:
+        for tax_brw in self.wh_tax_line:
             if not tax_brw.amount:
                 continue
             res.append(self.wh_move_line_get_item(tax_brw, wh_val))
@@ -83,6 +86,7 @@ class AccountInvoice(models.Model):
     def action_move_create_withholding(self):
         """Creates Withholding for taxes in invoice"""
         account_move = self.env['account.move']
+        aitw_obj = self.env['account.invoice.tax.wh']
 
         for invoice_brw in self:
             if invoice_brw.type not in ('out_invoice', 'out_refund'):
@@ -106,6 +110,12 @@ class AccountInvoice(models.Model):
                     _('Error!'),
                     _('Please Define a Journal to be used for withholding '
                       'ITBMS on Customer Invoice on Your Company.'))
+
+            for aitw in aitw_obj.compute(invoice_brw).values():
+                aitw_obj.create(aitw)
+
+            if not invoice_brw.wh_tax_line:
+                continue
 
             ctx = dict(self._context, lang=invoice_brw.partner_id.lang)
             date = invoice_brw.date_invoice
@@ -191,3 +201,89 @@ class AccountInvoice(models.Model):
             line_ids.reconcile_partial()
 
         return True
+
+
+class AccountInvoiceTaxWh(models.Model):
+    """Invoice Tax Withholding"""
+    _name = 'account.invoice.tax.wh'
+    _inherit = 'account.invoice.tax'
+
+    tax_id = fields.Many2one(
+        'account.tax', 'Tax', help='Tax related to withholding')
+
+    @api.multi
+    def compute(self, invoice):
+        tax_grouped = {}
+        currency = invoice.currency_id.with_context(
+            date=invoice.date_invoice or fields.Date.context_today(invoice))
+        company_currency = invoice.company_id.currency_id
+        for line in invoice.invoice_line:
+            taxes = line.invoice_line_tax_id.compute_all(
+                (line.price_unit * (1 - (line.discount or 0.0) / 100.0)),
+                line.quantity, line.product_id, invoice.partner_id)['taxes']
+            for tax in taxes:
+                val = {
+                    'invoice_id': invoice.id,
+                    'name': tax['name'],
+                    'amount': tax['amount'],
+                    'manual': False,
+                    'sequence': tax['sequence'],
+                    'base': currency.round(
+                        tax['price_unit'] * line['quantity']),
+                    'tax_id': tax['id']
+                }
+                if invoice.type in ('out_invoice', 'in_invoice'):
+                    val['base_code_id'] = tax['base_code_id']
+                    val['tax_code_id'] = tax['tax_code_id']
+                    val['base_amount'] = currency.compute(
+                        val['base'] * tax['base_sign'],
+                        company_currency, round=False)
+                    val['tax_amount'] = currency.compute(
+                        val['amount'] * tax['tax_sign'],
+                        company_currency, round=False)
+                    val['account_id'] = tax['account_collected_id'] or \
+                        line.account_id.id
+                    val['account_analytic_id'] = \
+                        tax['account_analytic_collected_id']
+                else:
+                    val['base_code_id'] = tax['ref_base_code_id']
+                    val['tax_code_id'] = tax['ref_tax_code_id']
+                    val['base_amount'] = currency.compute(
+                        val['base'] * tax['ref_base_sign'],
+                        company_currency, round=False)
+                    val['tax_amount'] = currency.compute(
+                        val['amount'] * tax['ref_tax_sign'],
+                        company_currency, round=False)
+                    val['account_id'] = tax['account_paid_id'] or \
+                        line.account_id.id
+                    val['account_analytic_id'] = \
+                        tax['account_analytic_paid_id']
+
+                # If the taxes generate moves on the same financial account as
+                # the invoice line and no default analytic account is defined
+                # at the tax level, propagate the analytic account from the
+                # invoice line to the tax line. This is necessary in situations
+                # were (part of) the taxes cannot be reclaimed, to ensure the
+                # tax move is allocated to the proper analytic account.
+                if not val.get('account_analytic_id') and \
+                        line.account_analytic_id and \
+                        val['account_id'] == line.account_id.id:
+                    val['account_analytic_id'] = line.account_analytic_id.id
+
+                key = (val['tax_code_id'], val['base_code_id'],
+                       val['account_id'], val['tax_id'])
+                if key not in tax_grouped:
+                    tax_grouped[key] = val
+                else:
+                    tax_grouped[key]['base'] += val['base']
+                    tax_grouped[key]['amount'] += val['amount']
+                    tax_grouped[key]['base_amount'] += val['base_amount']
+                    tax_grouped[key]['tax_amount'] += val['tax_amount']
+
+        for tax_val in tax_grouped.values():
+            tax_val['base'] = currency.round(tax_val['base'])
+            tax_val['amount'] = currency.round(tax_val['amount'])
+            tax_val['base_amount'] = currency.round(tax_val['base_amount'])
+            tax_val['tax_amount'] = currency.round(tax_val['tax_amount'])
+
+        return tax_grouped
