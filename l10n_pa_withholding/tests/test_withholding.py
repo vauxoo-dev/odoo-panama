@@ -121,6 +121,37 @@ class TestWithholding(TransactionCase):
             len(aml_ids), 1,
             'There should be a payment in the Invoice after reconciling')
 
+        inv.journal_id.update_posted = True
+        inv.wh_move_id.journal_id.update_posted = True
+        wh_move_name = inv.wh_move_id.name
+
+        inv.signal_workflow('invoice_cancel')
+
+        self.assertEquals(
+            inv.state, 'cancel',
+            'State should be "cancel" on Invoice')
+        self.assertEquals(
+            bool(inv.wh_move_id), False,
+            'Journal Entry for Withholding should be Empty')
+
+        self.assertEquals(
+            len(inv.wh_tax_line), 0,
+            'Invoice Should not have any Withholding Lines')
+
+        inv.action_cancel_draft()
+        self.assertEquals(
+            inv.state, 'draft',
+            'State should be "draft" on Invoice')
+
+        inv.signal_workflow('invoice_open')
+        self.assertEquals(
+            inv.state, 'open',
+            'State should be "open" on Invoice')
+
+        self.assertEquals(
+            inv.wh_move_id.name, wh_move_name,
+            'Journal Entry name should not have changed')
+
         return True
 
     def test_05_create_an_invoice_with_taxes_wh_no_receivable(self):
