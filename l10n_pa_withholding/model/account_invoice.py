@@ -180,6 +180,51 @@ class AccountInvoice(models.Model):
 
         return True
 
+    @api.multi
+    def action_cancel(self):
+        moves = self.env['account.move']
+        for inv_brw in self:
+            if not inv_brw.wh_move_id:
+                continue
+
+            if not inv_brw.payment_ids:
+                moves += inv_brw.wh_move_id
+                continue
+
+            wh_line_ids = [line.id
+                           for line in inv_brw.wh_move_id.line_id
+                           if line.account_id.id == inv_brw.account_id.id]
+
+            pay_line_ids = [line.id for line in inv_brw.payment_ids]
+
+            remaining_ids = set(pay_line_ids) - set(wh_line_ids)
+
+            if not remaining_ids:
+                moves += inv_brw.wh_move_id
+                self._remove_move_reconcile(list(pay_line_ids))
+                inv_brw.wh_tax_line.unlink()
+                continue
+
+        if moves:
+            moves.button_cancel()
+            moves.unlink()
+        super(AccountInvoice, self).action_cancel()
+        return True
+
+    @api.model
+    def _remove_move_reconcile(self, move_ids):
+        if not move_ids:
+            return True
+        aml_obj = self.env['account.move.line']
+        amr_obj = self.env['account.move.reconcile']
+        for aml_brw in aml_obj.browse(move_ids):
+            rec_id = aml_brw.reconcile_id or aml_brw.reconcile_partial_id
+            if not rec_id:
+                continue
+            amr_obj += rec_id
+        amr_obj.unlink()
+        return True
+
 
 class AccountInvoiceTaxWh(models.Model):
     """Invoice Tax Withholding"""
