@@ -221,14 +221,10 @@ class AccountInvoice(models.Model):
 
     @api.model
     def _remove_move_reconcile(self, move_ids):
-        if not move_ids:
-            return True
         aml_obj = self.env['account.move.line']
         amr_obj = self.env['account.move.reconcile']
         for aml_brw in aml_obj.browse(move_ids):
             rec_id = aml_brw.reconcile_id or aml_brw.reconcile_partial_id
-            if not rec_id:
-                continue
             amr_obj += rec_id
         amr_obj.unlink()
         return True
