@@ -106,9 +106,6 @@ class AccountInvoice(models.Model):
             company_currency = invoice_brw.company_id.currency_id
             ait = invoice_brw.wh_move_line_get()
 
-            if not ait:
-                continue
-
             total, total_currency, ait = invoice_brw.with_context(
                 ctx).compute_invoice_totals(company_currency, ref, ait)
 
