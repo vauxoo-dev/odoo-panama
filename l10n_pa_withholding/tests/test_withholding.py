@@ -73,6 +73,7 @@ class TestWithholding(TransactionCase):
         sale_brw.action_button_confirm()
 
         inv = self.create_invoice_from_sales_order(sale_id)
+        inv.company_id.wh_sale_itbms_account_id = self.ref('account.iva')
         inv.company_id.wh_sale_itbms_journal_id = self.ref(
             'account.miscellaneous_journal')
         inv.signal_workflow('invoice_open')
