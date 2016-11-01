@@ -195,13 +195,12 @@ class AccountInvoice(models.Model):
                            for line in inv_brw.wh_move_id.line_id
                            if line.account_id.id == inv_brw.account_id.id]
 
-            pay_line_ids = [line.id for line in inv_brw.payment_ids]
+            pay_line_ids = [line.id for line in inv_brw.payment_ids
+                            if line.id not in wh_line_ids]
 
-            remaining_ids = set(pay_line_ids) - set(wh_line_ids)
-
-            if not remaining_ids:
+            if not pay_line_ids:
                 moves += inv_brw.wh_move_id
-                self._remove_move_reconcile(list(pay_line_ids))
+                self._remove_move_reconcile(list(wh_line_ids))
                 inv_brw.wh_tax_line.unlink()
                 continue
 
