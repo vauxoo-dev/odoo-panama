@@ -48,6 +48,27 @@ class TestWithholding(TransactionCase):
         self.assertEquals(
             bool(inv.wh_move_id), False,
             'Journal Entry for Withholding should be Empty')
+
+        inv.journal_id.update_posted = True
+
+        inv.signal_workflow('invoice_cancel')
+
+        self.assertEquals(
+            inv.state, 'cancel',
+            'State should be "cancel" on Invoice')
+        self.assertEquals(
+            bool(inv.wh_move_id), False,
+            'Journal Entry for Withholding should be Empty')
+
+        self.assertEquals(
+            len(inv.wh_tax_line), 0,
+            'Invoice Should not have any Withholding Lines')
+
+        inv.action_cancel_draft()
+        self.assertEquals(
+            inv.state, 'draft',
+            'State should be "draft" on Invoice')
+
         return True
 
     def test_03_create_an_invoice_with_taxes_no_wh(self):
@@ -190,6 +211,28 @@ class TestWithholding(TransactionCase):
         self.assertEquals(
             len(aml_ids), 2,
             'Withholding Invoice should have Two Journal Items')
+
+        inv.journal_id.update_posted = True
+        inv.wh_move_id.journal_id.update_posted = True
+
+        inv.signal_workflow('invoice_cancel')
+
+        self.assertEquals(
+            inv.state, 'cancel',
+            'State should be "cancel" on Invoice')
+        self.assertEquals(
+            bool(inv.wh_move_id), False,
+            'Journal Entry for Withholding should be Empty')
+
+        self.assertEquals(
+            len(inv.wh_tax_line), 0,
+            'Invoice Should not have any Withholding Lines')
+
+        inv.action_cancel_draft()
+        self.assertEquals(
+            inv.state, 'draft',
+            'State should be "draft" on Invoice')
+
         return True
 
     def test_06_apply_wh_on_a_refund(self):
