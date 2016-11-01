@@ -21,6 +21,7 @@
         'view/res_company.xml',
         'view/sale_order_view.xml',
         'workflow/wh_action_server.xml',
+        'security/ir.model.access.csv',
     ],
     "test": [],
     "installable": True,

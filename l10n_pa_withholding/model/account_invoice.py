@@ -2,6 +2,7 @@
 # Copyright 2016 Vauxoo (https://www.vauxoo.com) <info@vauxoo.com>
 from __future__ import division
 from openerp import api, fields, models, _
+import openerp.addons.decimal_precision as dp
 from openerp.exceptions import except_orm
 
 
@@ -20,23 +21,13 @@ class AccountInvoice(models.Model):
         readonly=True, copy=False, help='Withheld Tax Lines')
 
     @api.model
-    def wh_tax_account(self, line):
-        account_id = line.invoice_id.company_id.wh_sale_itbms_account_id
-        if not account_id:
-            raise except_orm(
-                _('Error!'),
-                _('Please Define an Account to be used for withholding ITBMS '
-                  'on Customer Invoice on Your Company.'))
-        return account_id.id
-
-    @api.model
-    def wh_move_line_get_item(self, line, wh_val):
+    def wh_move_line_get_item(self, line):
         sign = -1 if 'out' in line.invoice_id.type else 1
         return {
             'type': 'src',
             'name': line.name.split('\n')[0][:64],
-            'account_id': self.wh_tax_account(line),
-            'price': sign * line.amount * wh_val / 100.0,
+            'account_id': line.account_id.id,
+            'price': sign * line.wh_amount,
             'tax_code_id': line.tax_code_id.id,
             'tax_amount': line.amount,
         }
@@ -63,24 +54,15 @@ class AccountInvoice(models.Model):
         }
 
     @api.model
-    def wh_move_line_get(self, wh_val):
+    def wh_move_line_get(self):
         # /!\ TODO: Invoice to be ommited for Withholding
         # return []
         # /!\ TODO: Determine if withholding will proceed because of the
         # Withholding Agent Entitlement
         res = []
         for tax_brw in self.wh_tax_line:
-            if not tax_brw.amount:
-                continue
-            res.append(self.wh_move_line_get_item(tax_brw, wh_val))
+            res.append(self.wh_move_line_get_item(tax_brw))
         return res
-
-    @api.multi
-    def wh_subject_mapping(self, val):
-        res = dict([
-            ('1', 100), ('2', 50), ('3', 100),
-            ('4', 50), ('5', 2), ('6', 1), ('7', 50)])
-        return res.get(val, 0.0)
 
     @api.multi
     def action_move_create_withholding(self):
@@ -122,8 +104,7 @@ class AccountInvoice(models.Model):
 
             ref = invoice_brw.reference or invoice_brw.name,
             company_currency = invoice_brw.company_id.currency_id
-            wh = self.wh_subject_mapping(self.l10n_pa_wh_subject)
-            ait = invoice_brw.wh_move_line_get(wh)
+            ait = invoice_brw.wh_move_line_get()
 
             if not ait:
                 continue
@@ -209,19 +190,44 @@ class AccountInvoiceTaxWh(models.Model):
     _inherit = 'account.invoice.tax'
 
     tax_id = fields.Many2one(
-        'account.tax', 'Tax', help='Tax related to withholding')
+        'account.tax', 'Withheld Tax', help='Tax related to withholding')
+    wh_amount = fields.Float(
+        string='Withheld Amount', digits=dp.get_precision('Account'),
+        help="Amount Withheld from the Tax")
+
+    @api.multi
+    def wh_subject_mapping(self, val):
+        res = dict([
+            ('1', 100), ('2', 50), ('3', 100),
+            ('4', 50), ('5', 2), ('6', 1), ('7', 50)])
+        return res.get(val, 0.0)
+
+    @api.model
+    def wh_tax_account(self, invoice_id):
+        account_id = invoice_id.company_id.wh_sale_itbms_account_id
+        if not account_id:
+            raise except_orm(
+                _('Error!'),
+                _('Please Define an Account to be used for withholding ITBMS '
+                  'on Customer Invoice on Your Company.'))
+        return account_id.id
 
     @api.multi
     def compute(self, invoice):
+        at_obj = self.env['account.tax']
         tax_grouped = {}
         currency = invoice.currency_id.with_context(
             date=invoice.date_invoice or fields.Date.context_today(invoice))
         company_currency = invoice.company_id.currency_id
+        account_id = self.wh_tax_account(invoice)
+        wh = self.wh_subject_mapping(invoice.l10n_pa_wh_subject)
         for line in invoice.invoice_line:
             taxes = line.invoice_line_tax_id.compute_all(
                 (line.price_unit * (1 - (line.discount or 0.0) / 100.0)),
                 line.quantity, line.product_id, invoice.partner_id)['taxes']
             for tax in taxes:
+                if not at_obj.browse(tax['id']).withholdable:
+                    continue
                 val = {
                     'invoice_id': invoice.id,
                     'name': tax['name'],
@@ -241,8 +247,7 @@ class AccountInvoiceTaxWh(models.Model):
                     val['tax_amount'] = currency.compute(
                         val['amount'] * tax['tax_sign'],
                         company_currency, round=False)
-                    val['account_id'] = tax['account_collected_id'] or \
-                        line.account_id.id
+                    val['account_id'] = account_id
                     val['account_analytic_id'] = \
                         tax['account_analytic_collected_id']
                 else:
@@ -254,21 +259,9 @@ class AccountInvoiceTaxWh(models.Model):
                     val['tax_amount'] = currency.compute(
                         val['amount'] * tax['ref_tax_sign'],
                         company_currency, round=False)
-                    val['account_id'] = tax['account_paid_id'] or \
-                        line.account_id.id
+                    val['account_id'] = account_id
                     val['account_analytic_id'] = \
                         tax['account_analytic_paid_id']
-
-                # If the taxes generate moves on the same financial account as
-                # the invoice line and no default analytic account is defined
-                # at the tax level, propagate the analytic account from the
-                # invoice line to the tax line. This is necessary in situations
-                # were (part of) the taxes cannot be reclaimed, to ensure the
-                # tax move is allocated to the proper analytic account.
-                if not val.get('account_analytic_id') and \
-                        line.account_analytic_id and \
-                        val['account_id'] == line.account_id.id:
-                    val['account_analytic_id'] = line.account_analytic_id.id
 
                 key = (val['tax_code_id'], val['base_code_id'],
                        val['account_id'], val['tax_id'])
@@ -285,6 +278,6 @@ class AccountInvoiceTaxWh(models.Model):
             tax_val['amount'] = currency.round(tax_val['amount'])
             tax_val['base_amount'] = currency.round(tax_val['base_amount'])
             tax_val['tax_amount'] = currency.round(tax_val['tax_amount'])
+            tax_val['wh_amount'] = tax_val['amount'] * wh / 100
 
         return tax_grouped
-
