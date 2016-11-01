@@ -126,6 +126,14 @@
             <field name="price_unit">32.0</field>
             <field name="tax_id" eval="[(4,ref('itbms_sale1'))]"/>
         </record>
+        <record id="so_02_line_02" model="sale.order.line">
+            <field name="name">so_02_line_02</field>
+            <field name="order_id" ref="so_02"/>
+            <field name="product_id" ref="product01"/>
+            <field name="product_uom_qty">1</field>
+            <field name="price_unit">64.0</field>
+            <field name="tax_id" eval="[(4,ref('itbms_sale1'))]"/>
+        </record>
         <record id="so_03" model="sale.order">
             <field name="name">l10n_pa_withholding_03</field>
             <field name="date_order" eval="datetime.now().strftime('%Y-%m-%d')" />
