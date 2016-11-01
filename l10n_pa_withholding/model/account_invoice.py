@@ -16,6 +16,8 @@ class AccountInvoice(models.Model):
         index=True,
         copy=False,
         help="Link to the automatically generated Withholding Journal Entry.")
+    wh_move_name = fields.Char(
+        'Withholding Name', copy=False, help='Withholding Name')
     wh_tax_line = fields.One2many(
         'account.invoice.tax.wh', 'invoice_id', string='Wh Tax Lines',
         readonly=True, copy=False, help='Withheld Tax Lines')
@@ -139,6 +141,9 @@ class AccountInvoice(models.Model):
             }
             ctx['company_id'] = invoice_brw.company_id.id
 
+            if invoice_brw.wh_move_name:
+                move_vals['name'] = invoice_brw.wh_move_name
+
             move_vals['period_id'] = invoice_brw.period_id.id
             for i in line:
                 i[2]['period_id'] = invoice_brw.period_id.id
@@ -146,8 +151,12 @@ class AccountInvoice(models.Model):
             ctx_nolang = ctx.copy()
             ctx_nolang.pop('lang', None)
             move = account_move.with_context(ctx_nolang).create(move_vals)
+            move.post()
 
-            invoice_brw.write({'wh_move_id': move.id})
+            invoice_brw.write({
+                'wh_move_id': move.id,
+                'wh_move_name': move.name,
+            })
         return True
 
     @api.multi
@@ -184,6 +193,7 @@ class AccountInvoice(models.Model):
     def action_cancel(self):
         moves = self.env['account.move']
         for inv_brw in self:
+            inv_brw.wh_tax_line.unlink()
             if not inv_brw.wh_move_id:
                 continue
 
@@ -201,7 +211,6 @@ class AccountInvoice(models.Model):
             if not pay_line_ids:
                 moves += inv_brw.wh_move_id
                 self._remove_move_reconcile(list(wh_line_ids))
-                inv_brw.wh_tax_line.unlink()
                 continue
 
         if moves:
