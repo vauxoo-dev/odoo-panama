@@ -40,6 +40,7 @@
             <field name="tax_sign">1</field>
             <field name="ref_tax_sign">1</field>
             <field name="applicable_type">true</field>
+            <field name="withholdable" eval="True"/>
         </record>
         <record id="itbms_sale_neg" model="account.tax">
             <field name="name">ITBMS - -7% - Ventas (test)</field>
@@ -59,6 +60,7 @@
             <field name="tax_sign">-1</field>
             <field name="ref_tax_sign">-1</field>
             <field name="applicable_type">true</field>
+            <field name="withholdable" eval="True"/>
         </record>
         <record id="itbms_sale_exempt" model="account.tax">
             <field name="name">ITBMS - 0% - Ventas (test)</field>
