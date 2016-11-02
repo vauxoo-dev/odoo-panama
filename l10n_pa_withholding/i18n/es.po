@@ -10,6 +10,7 @@ msgstr ""
 "PO-Revision-Date: 2016-11-01 23:37+0000\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -18,18 +19,18 @@ msgstr ""
 #. module: l10n_pa_withholding
 #: view:account.invoice:l10n_pa_withholding.invoice_customer_wh_itbms_form
 msgid "(apply withholding)"
-msgstr ""
+msgstr "(aplicar retención)"
 
 #. module: l10n_pa_withholding
 #: help:res.company,wh_sale_itbms_account_id:0
 #: help:res.company,wh_sale_itbms_journal_id:0
 msgid "Account to be used for withholding ITBMS on Customer Invoice"
-msgstr ""
+msgstr "Cuenta que se usará para retener el ITBMS en las Facturas de Cliente"
 
 #. module: l10n_pa_withholding
 #: view:res.company:l10n_pa_withholding.res_company_view_act
 msgid "Accounting Information for ITBMS"
-msgstr ""
+msgstr "Información Contable para ITBMS"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_concept:0
@@ -37,7 +38,7 @@ msgstr ""
 #: selection:res.partner,l10n_pa_concept:0
 #: selection:sale.order,l10n_pa_concept:0
 msgid "Alquileres por Arrendamientos Comerciales"
-msgstr ""
+msgstr "Alquileres por Arrendamientos Comerciales"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice.tax.wh,amount:0
@@ -72,17 +73,17 @@ msgstr ""
 #. module: l10n_pa_withholding
 #: model:account.tax.code,name:l10n_pa_withholding.sale_base_code_exempt
 msgid "Base de Exenta - Ventas (test)"
-msgstr ""
+msgstr "Base de Exenta - Ventas (test)"
 
 #. module: l10n_pa_withholding
 #: model:account.tax.code,name:l10n_pa_withholding.sale_base_code
 msgid "Base de Impuestos - Ventas (test)"
-msgstr ""
+msgstr "Base de Impuestos - Ventas (test)"
 
 #. module: l10n_pa_withholding
 #: model:account.tax.code,name:l10n_pa_withholding.sale_neg_base_code
 msgid "Base de Impuestos - Ventas Negativo (test)"
-msgstr ""
+msgstr "Base de Impuestos - Ventas Negativo (test)"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_concept:0
@@ -90,12 +91,12 @@ msgstr ""
 #: selection:res.partner,l10n_pa_concept:0
 #: selection:sale.order,l10n_pa_concept:0
 msgid "Cargos Bancarios, Intereses y Otros Gastos Financieros"
-msgstr ""
+msgstr "Cargos Bancarios, Intereses y Otros Gastos Financieros"
 
 #. module: l10n_pa_withholding
 #: model:ir.model,name:l10n_pa_withholding.model_res_company
 msgid "Companies"
-msgstr ""
+msgstr "Compañías"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice.tax.wh,company_id:0
@@ -108,7 +109,7 @@ msgstr ""
 #: selection:res.partner,l10n_pa_concept:0
 #: selection:sale.order,l10n_pa_concept:0
 msgid "Compras o Adquisiciones de Bienes Muebles"
-msgstr ""
+msgstr "Compras o Adquisiciones de Bienes Muebles"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_concept:0
@@ -116,7 +117,7 @@ msgstr ""
 #: selection:res.partner,l10n_pa_concept:0
 #: selection:sale.order,l10n_pa_concept:0
 msgid "Compras o Servicios Consolidados"
-msgstr ""
+msgstr "Compras o Servicios Consolidados"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_concept:0
@@ -124,7 +125,7 @@ msgstr ""
 #: selection:res.partner,l10n_pa_concept:0
 #: selection:sale.order,l10n_pa_concept:0
 msgid "Compras o Servicios del Exterior"
-msgstr ""
+msgstr "Compras o Servicios del Exterior"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice.tax.wh,create_uid:0
@@ -140,7 +141,7 @@ msgstr ""
 #: field:account.invoice.tax.wh,display_name:0
 #: field:l10n.pa.common.abstract,display_name:0
 msgid "Display Name"
-msgstr ""
+msgstr "Nombre a Mostrar"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice,l10n_pa_entity:0
@@ -148,7 +149,7 @@ msgstr ""
 #: field:res.partner,l10n_pa_entity:0
 #: field:sale.order,l10n_pa_entity:0
 msgid "Entity Type"
-msgstr ""
+msgstr "Tipo de Persona"
 
 #. module: l10n_pa_withholding
 #: code:addons/l10n_pa_withholding/model/account_invoice.py:86
@@ -156,7 +157,7 @@ msgstr ""
 #: code:addons/l10n_pa_withholding/model/account_invoice.py:256
 #, python-format
 msgid "Error!"
-msgstr ""
+msgstr "¡Error!"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_entity:0
@@ -164,23 +165,23 @@ msgstr ""
 #: selection:res.partner,l10n_pa_entity:0
 #: selection:sale.order,l10n_pa_entity:0
 msgid "Extranjero"
-msgstr ""
+msgstr "Extranjero"
 
 #. module: l10n_pa_withholding
 #: view:account.invoice:l10n_pa_withholding.invoice_customer_wh_itbms_form
 #: view:sale.order:l10n_pa_withholding.sale_order_wh_itbms_form
 msgid "Fiscal Info"
-msgstr ""
+msgstr "Información Fiscal"
 
 #. module: l10n_pa_withholding
 #: view:res.partner:l10n_pa_withholding.res_partner_wh_itbms_form
 msgid "Fiscal Information"
-msgstr ""
+msgstr "Información Fiscal"
 
 #. module: l10n_pa_withholding
 #: view:res.partner:l10n_pa_withholding.res_partner_wh_itbms_form
 msgid "Fiscal-related settings are managed on"
-msgstr ""
+msgstr "Las configuraciones fiscales se administran en"
 
 #. module: l10n_pa_withholding
 #: help:account.invoice.tax.wh,sequence:0
@@ -193,34 +194,34 @@ msgstr ""
 #: selection:res.partner,l10n_pa_concept:0
 #: selection:sale.order,l10n_pa_concept:0
 msgid "Honorarios y Comisiones por Servicios"
-msgstr ""
+msgstr "Honorarios y Comisiones por Servicios"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice.tax.wh,id:0
 #: field:l10n.pa.common.abstract,id:0
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: l10n_pa_withholding
 #: model:account.tax,name:l10n_pa_withholding.itbms_sale_neg
 msgid "ITBMS - -7% - Ventas (test)"
-msgstr ""
+msgstr "ITBMS - -7% - Ventas (test)"
 
 #. module: l10n_pa_withholding
 #: model:account.tax,name:l10n_pa_withholding.itbms_sale_exempt
 msgid "ITBMS - 0% - Ventas (test)"
-msgstr ""
+msgstr "ITBMS - 0% - Ventas (test)"
 
 #. module: l10n_pa_withholding
 #: model:account.tax,name:l10n_pa_withholding.itbms_sale1
 msgid "ITBMS - 7% - Ventas (test)"
-msgstr ""
+msgstr "ITBMS - 7% - Ventas (test)"
 
 #. module: l10n_pa_withholding
 #: code:addons/l10n_pa_withholding/model/account_invoice.py:119
 #, python-format
 msgid "ITBMS Withheld on Invoice"
-msgstr ""
+msgstr "ITBMOS Retenido en Factura"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice,wh_agent_itbms:0
@@ -228,12 +229,12 @@ msgstr ""
 #: field:res.partner,wh_agent_itbms:0
 #: field:sale.order,wh_agent_itbms:0
 msgid "ITBMS Withholding Agent"
-msgstr ""
+msgstr "Agente de Retención del ITBMS"
 
 #. module: l10n_pa_withholding
 #: model:ir.actions.server,name:l10n_pa_withholding.wh_iva_srv_act
 msgid "ITBMS Withholding Server Action"
-msgstr ""
+msgstr "Acción de Servidor la Retención de ITBMS"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice,l10n_pa_wh_subject:0
@@ -241,7 +242,7 @@ msgstr ""
 #: field:res.partner,l10n_pa_wh_subject:0
 #: field:sale.order,l10n_pa_wh_subject:0
 msgid "ITBMS Withholding Subject"
-msgstr ""
+msgstr "Objeto de Retención del ITBMS"
 
 #. module: l10n_pa_withholding
 #: help:account.invoice,l10n_pa_wh_subject:0
@@ -249,7 +250,7 @@ msgstr ""
 #: help:res.partner,l10n_pa_wh_subject:0
 #: help:sale.order,l10n_pa_wh_subject:0
 msgid "If Apply. Indicates how much ITBMS to withholding on Payment"
-msgstr ""
+msgstr "Si Aplica. Indica cuanto ITBS retener en el Pago"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_prd_srv:0
@@ -257,22 +258,22 @@ msgstr ""
 #: selection:res.partner,l10n_pa_prd_srv:0
 #: selection:sale.order,l10n_pa_prd_srv:0
 msgid "Importaciones"
-msgstr ""
+msgstr "Importaciones"
 
 #. module: l10n_pa_withholding
 #: model:account.tax.code,name:l10n_pa_withholding.sale_tax_code
 msgid "Impuesto - Ventas (test)"
-msgstr ""
+msgstr "Impuesto - Ventas (test)"
 
 #. module: l10n_pa_withholding
 #: model:account.tax.code,name:l10n_pa_withholding.sale_neg_tax_code
 msgid "Impuesto - Ventas Negativo (test)"
-msgstr ""
+msgstr "Impuesto - Ventas Negativo (test)"
 
 #. module: l10n_pa_withholding
 #: model:account.tax.code,name:l10n_pa_withholding.sale_tax_code_exempt
 msgid "Impuesto Exento - Ventas (test)"
-msgstr ""
+msgstr "Impuesto Exento - Ventas (test)"
 
 #. module: l10n_pa_withholding
 #: help:account.invoice,wh_agent_itbms:0
@@ -280,7 +281,7 @@ msgstr ""
 #: help:res.partner,wh_agent_itbms:0
 #: help:sale.order,wh_agent_itbms:0
 msgid "Indicate if the Partner is a ITBMS Withholding Agent"
-msgstr ""
+msgstr "Indica si la Empresa es un Agente de Retención del ITBMS"
 
 #. module: l10n_pa_withholding
 #: help:account.invoice,l10n_pa_prd_srv:0
@@ -288,7 +289,7 @@ msgstr ""
 #: help:res.partner,l10n_pa_prd_srv:0
 #: help:sale.order,l10n_pa_prd_srv:0
 msgid "Indicates Source of Purchase of Goods or Services."
-msgstr ""
+msgstr "Indica el Origen de la Compra de los Bienes o Servicios."
 
 #. module: l10n_pa_withholding
 #: help:account.tax,withholdable:0
@@ -301,7 +302,7 @@ msgstr ""
 #: help:res.partner,l10n_pa_concept:0
 #: help:sale.order,l10n_pa_concept:0
 msgid "Indicates the Concept of the Supplier Invoice."
-msgstr ""
+msgstr "Indica el Concepto de la Factura del Proveedor"
 
 #. module: l10n_pa_withholding
 #: help:account.invoice,l10n_pa_entity:0
@@ -309,12 +310,12 @@ msgstr ""
 #: help:res.partner,l10n_pa_entity:0
 #: help:sale.order,l10n_pa_entity:0
 msgid "Indicates the nature of the Supplier Entity."
-msgstr ""
+msgstr "Indica la naturaleza  de la Entidad Proveedora."
 
 #. module: l10n_pa_withholding
 #: model:ir.model,name:l10n_pa_withholding.model_account_invoice
 msgid "Invoice"
-msgstr ""
+msgstr "Factura"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice.tax.wh,invoice_id:0
@@ -324,7 +325,7 @@ msgstr ""
 #. module: l10n_pa_withholding
 #: model:ir.model,name:l10n_pa_withholding.model_account_invoice_refund
 msgid "Invoice Refund"
-msgstr ""
+msgstr "Nota de Crédito"
 
 #. module: l10n_pa_withholding
 #: model:ir.model,name:l10n_pa_withholding.model_account_invoice_tax_wh
@@ -337,13 +338,13 @@ msgstr ""
 #: selection:res.partner,l10n_pa_entity:0
 #: selection:sale.order,l10n_pa_entity:0
 msgid "Juridico"
-msgstr ""
+msgstr "Juridico"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice.tax.wh,__last_update:0
 #: field:l10n.pa.common.abstract,__last_update:0
 msgid "Last Modified on"
-msgstr ""
+msgstr "Última Modificación el"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice.tax.wh,write_uid:0
@@ -358,7 +359,7 @@ msgstr ""
 #. module: l10n_pa_withholding
 #: help:account.invoice,wh_move_id:0
 msgid "Link to the automatically generated Withholding Journal Entry."
-msgstr ""
+msgstr "Vincula al Asiento Contable de Retencion generado automáticamente"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_prd_srv:0
@@ -366,7 +367,7 @@ msgstr ""
 #: selection:res.partner,l10n_pa_prd_srv:0
 #: selection:sale.order,l10n_pa_prd_srv:0
 msgid "Locales"
-msgstr ""
+msgstr "Locales"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice.tax.wh,manual:0
@@ -376,7 +377,7 @@ msgstr ""
 #. module: l10n_pa_withholding
 #: model:ir.actions.server,name:l10n_pa_withholding.multiact_wh_srv_act
 msgid "Multi-Actions Withholding Server Action"
-msgstr ""
+msgstr "Acción de Servidor Retención Multi-Acciones"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice.tax.wh,factor_tax:0
@@ -394,7 +395,7 @@ msgstr ""
 #: selection:res.partner,l10n_pa_entity:0
 #: selection:sale.order,l10n_pa_entity:0
 msgid "Natural"
-msgstr ""
+msgstr "Natural"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_wh_subject:0
@@ -402,7 +403,7 @@ msgstr ""
 #: selection:res.partner,l10n_pa_wh_subject:0
 #: selection:sale.order,l10n_pa_wh_subject:0
 msgid "No Aplica"
-msgstr ""
+msgstr "No Aplica"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_wh_subject:0
@@ -410,7 +411,7 @@ msgstr ""
 #: selection:res.partner,l10n_pa_wh_subject:0
 #: selection:sale.order,l10n_pa_wh_subject:0
 msgid "Pago a Comercio Afiliado a Sistema de TC/TD 1%"
-msgstr ""
+msgstr "Pago a Comercio Afiliado a Sistema de TC/TD 1%"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_wh_subject:0
@@ -418,7 +419,7 @@ msgstr ""
 #: selection:res.partner,l10n_pa_wh_subject:0
 #: selection:sale.order,l10n_pa_wh_subject:0
 msgid "Pago a Comercio Afiliado a Sistema de TC/TD 2%"
-msgstr ""
+msgstr "Pago a Comercio Afiliado a Sistema de TC/TD 2%"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_wh_subject:0
@@ -426,7 +427,7 @@ msgstr ""
 #: selection:res.partner,l10n_pa_wh_subject:0
 #: selection:sale.order,l10n_pa_wh_subject:0
 msgid "Pago a Comercio Afiliado a Sistema de TC/TD 50%"
-msgstr ""
+msgstr "Pago a Comercio Afiliado a Sistema de TC/TD 50%"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_wh_subject:0
@@ -435,6 +436,8 @@ msgstr ""
 #: selection:sale.order,l10n_pa_wh_subject:0
 msgid "Pago o Acreditacion a No Domiciliado o Empresa Constituida en el Exterior 100%"
 msgstr ""
+"Pago o Acreditacion a No Domiciliado o Empresa Constituida en el Exterior "
+"100%"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_wh_subject:0
@@ -442,7 +445,7 @@ msgstr ""
 #: selection:res.partner,l10n_pa_wh_subject:0
 #: selection:sale.order,l10n_pa_wh_subject:0
 msgid "Pago o Acreditacion por Compra de Bienes/Servicios 50%"
-msgstr ""
+msgstr "Pago o Acreditacion por Compra de Bienes/Servicios 50%"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_wh_subject:0
@@ -450,7 +453,7 @@ msgstr ""
 #: selection:res.partner,l10n_pa_wh_subject:0
 #: selection:sale.order,l10n_pa_wh_subject:0
 msgid "Pago por Servicio Profesional al Estado 100%"
-msgstr ""
+msgstr "Pago por Servicio Profesional al Estado 100%"
 
 #. module: l10n_pa_withholding
 #: selection:account.invoice,l10n_pa_wh_subject:0
@@ -458,35 +461,39 @@ msgstr ""
 #: selection:res.partner,l10n_pa_wh_subject:0
 #: selection:sale.order,l10n_pa_wh_subject:0
 msgid "Pago por Venta de Bienes/Servicios al Estado 50%"
-msgstr ""
+msgstr "Pago por Venta de Bienes/Servicios al Estado 50%"
 
 #. module: l10n_pa_withholding
 #: model:ir.model,name:l10n_pa_withholding.model_res_partner
 msgid "Partner"
-msgstr ""
+msgstr "Empresa"
 
 #. module: l10n_pa_withholding
 #: model:ir.model,name:l10n_pa_withholding.model_stock_picking
 msgid "Picking List"
-msgstr ""
+msgstr "Lista de Albarán"
 
 #. module: l10n_pa_withholding
 #: code:addons/l10n_pa_withholding/model/account_invoice.py:95
 #, python-format
 msgid "Please Define a Journal to be used for withholding ITBMS on Customer Invoice on Your Company."
 msgstr ""
+"Por favor Defina un Diario que se usará para retener ITBMS en la Factura de "
+"Cliente en Su Compañía."
 
 #. module: l10n_pa_withholding
 #: code:addons/l10n_pa_withholding/model/account_invoice.py:257
 #, python-format
 msgid "Please Define an Account to be used for withholding ITBMS on Customer Invoice on Your Company."
 msgstr ""
+"Por favor Defina una Cuenta que se usará para retener ITBMS en la Factura de "
+"Cliente en Su Compañía."
 
 #. module: l10n_pa_withholding
 #: code:addons/l10n_pa_withholding/model/account_invoice.py:87
 #, python-format
 msgid "Please define a Withholding Subject to this invoice."
-msgstr ""
+msgstr "Por favor defina un Objeto de Retención en esta factura."
 
 #. module: l10n_pa_withholding
 #: field:account.invoice,l10n_pa_prd_srv:0
@@ -494,17 +501,17 @@ msgstr ""
 #: field:res.partner,l10n_pa_prd_srv:0
 #: field:sale.order,l10n_pa_prd_srv:0
 msgid "Purchase of Goods or Services"
-msgstr ""
+msgstr "Compra de Bienes o Servicios"
 
 #. module: l10n_pa_withholding
 #: view:account.invoice:l10n_pa_withholding.invoice_customer_wh_itbms_form
 msgid "Reconciles Withholding with Invoice"
-msgstr ""
+msgstr "Reconcilia la Retención con la Factura"
 
 #. module: l10n_pa_withholding
 #: model:ir.model,name:l10n_pa_withholding.model_sale_order
 msgid "Sales Order"
-msgstr ""
+msgstr "Orden de Venta"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice.tax.wh,sequence:0
@@ -517,7 +524,7 @@ msgstr ""
 #: selection:res.partner,l10n_pa_concept:0
 #: selection:sale.order,l10n_pa_concept:0
 msgid "Servicios Básicos"
-msgstr ""
+msgstr "Servicios Básicos"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice,l10n_pa_concept:0
@@ -525,12 +532,12 @@ msgstr ""
 #: field:res.partner,l10n_pa_concept:0
 #: field:sale.order,l10n_pa_concept:0
 msgid "Supplier Invoice Concept"
-msgstr ""
+msgstr "Concepto de Factura de Proveedor"
 
 #. module: l10n_pa_withholding
 #: model:product.template,name:l10n_pa_withholding.product01_product_template
 msgid "Targus Laptop 16\" Bag"
-msgstr ""
+msgstr "Targus Laptop 16\" Bag"
 
 #. module: l10n_pa_withholding
 #: model:ir.model,name:l10n_pa_withholding.model_account_tax
@@ -575,12 +582,12 @@ msgstr ""
 #. module: l10n_pa_withholding
 #: field:res.company,wh_sale_itbms_account_id:0
 msgid "Wh Sale ITBMS Account"
-msgstr ""
+msgstr "Cuenta de Ret de Ventas ITBMS"
 
 #. module: l10n_pa_withholding
 #: field:res.company,wh_sale_itbms_journal_id:0
 msgid "Wh Sale ITBMS Journal"
-msgstr ""
+msgstr "Diario de Ret de Ventas ITBMS"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice,wh_tax_line:0
@@ -620,7 +627,7 @@ msgstr ""
 #. module: l10n_pa_withholding
 #: field:account.invoice,wh_move_id:0
 msgid "Withholding Journal Entry"
-msgstr ""
+msgstr "Asiento Contable de Retención"
 
 #. module: l10n_pa_withholding
 #: field:account.invoice,wh_move_name:0
@@ -631,5 +638,4 @@ msgstr ""
 #. module: l10n_pa_withholding
 #: view:res.partner:l10n_pa_withholding.res_partner_wh_itbms_form
 msgid "the parent company"
-msgstr ""
-
+msgstr "la compañía padre"
