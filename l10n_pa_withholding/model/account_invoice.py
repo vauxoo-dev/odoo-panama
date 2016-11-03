@@ -279,7 +279,23 @@ class AccountInvoiceTaxWh(models.Model):
             date=invoice.date_invoice or fields.Date.context_today(invoice))
         company_currency = invoice.company_id.currency_id
         account_id = self.wh_tax_account(invoice)
-        wh = self.wh_subject_mapping(invoice.l10n_pa_wh_subject).get('rate')
+        wh_dict = self.wh_subject_mapping(invoice.l10n_pa_wh_subject)
+        wh = wh_dict.get('rate')
+        wh_basis = wh_dict.get('basis')
+        if wh_basis == 'total':
+            val = {
+                'invoice_id': invoice.id,
+                'name': _('Retencion por TDD/TDC'),
+                'amount': currency.round(invoice.amount_total),
+                'manual': False,
+                'base': currency.round(invoice.amount_total),
+                'base_amount': currency.round(invoice.amount_total),
+                'tax_amount': currency.round(invoice.amount_total),
+                'wh_amount': currency.round(invoice.amount_total) * wh / 100,
+                'account_id': account_id,
+            }
+            return {(None,): val}
+
         for line in invoice.invoice_line:
             taxes = line.invoice_line_tax_id.compute_all(
                 (line.price_unit * (1 - (line.discount or 0.0) / 100.0)),

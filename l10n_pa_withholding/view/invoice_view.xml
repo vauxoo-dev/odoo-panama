@@ -25,7 +25,7 @@
                     <separator string="Withheld Taxes" groups="base.group_no_one"/>
                     <field name="wh_tax_line" groups="base.group_no_one">
                         <tree>
-                            <field name="tax_id"/>
+                            <field name="name"/>
                             <field name="account_id" string="Withheld Tax Account" groups="account.group_account_user"/>
                             <field name="base"/>
                             <field name="amount"/>

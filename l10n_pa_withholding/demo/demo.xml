@@ -170,5 +170,22 @@
             <field name="price_unit">32.0</field>
             <field name="tax_id" eval="[(4,ref('itbms_sale1')),(4,ref('itbms_sale_neg'))]"/>
         </record>
+        <record id="so_05" model="sale.order">
+            <field name="name">l10n_pa_withholding_05</field>
+            <field name="date_order" eval="datetime.now().strftime('%Y-%m-%d')" />
+            <field name="partner_id" ref="base.res_partner_12"/>
+            <field name="currency_id" ref="base.EUR"/>
+            <field name="pricelist_id" ref="product.list0"/>
+            <field name="order_policy">manual</field>
+            <field name="wh_agent_itbms" eval="True"/>
+            <field name="l10n_pa_wh_subject">5</field>
+        </record>
+        <record id="so_05_line_01" model="sale.order.line">
+            <field name="name">so_05_line_01</field>
+            <field name="order_id" ref="so_05"/>
+            <field name="product_id" ref="product01"/>
+            <field name="product_uom_qty">1</field>
+            <field name="price_unit">100.0</field>
+        </record>
     </data>
 </openerp>

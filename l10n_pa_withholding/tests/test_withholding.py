@@ -71,6 +71,61 @@ class TestWithholding(TransactionCase):
 
         return True
 
+    def test_02_create_an_invoice_without_tax_with_wh_tdc(self):
+        """Test withholding in an invoice without taxes and Withholding Subject
+        is TDD/TDC"""
+        sale_id = self.ref('l10n_pa_withholding.so_05')
+        sale_brw = self.so_obj.browse(sale_id)
+
+        sale_brw.action_button_confirm()
+        self.assertEquals(sale_brw.state, 'manual', 'Wrong State on SO')
+        inv = self.create_invoice_from_sales_order(sale_id)
+
+        self.assertEquals(
+            inv.l10n_pa_wh_subject, '5', 'Withholding Concept Should be "5"')
+
+        inv.company_id.wh_sale_itbms_account_id = self.ref('account.iva')
+        inv.company_id.wh_sale_itbms_journal_id = self.ref(
+            'account.miscellaneous_journal')
+
+        inv.signal_workflow('invoice_open')
+
+        self.assertEquals(
+            inv.state, 'open', 'Wrong State on Invoice it should be "open"')
+
+        self.assertEquals(
+            bool(inv.wh_move_id), True,
+            'Journal Entry for Withholding should be Filled')
+
+        # /!\ NOTE: Assert amount withheld
+        inv.wihholding_reconciliation()
+        self.assertEquals(
+            inv.residual, 98.0,
+            'Residual should be 98.0')
+
+        inv.journal_id.update_posted = True
+        inv.wh_move_id.journal_id.update_posted = True
+
+        inv.signal_workflow('invoice_cancel')
+
+        self.assertEquals(
+            inv.state, 'cancel',
+            'State should be "cancel" on Invoice')
+        self.assertEquals(
+            bool(inv.wh_move_id), False,
+            'Journal Entry for Withholding should be Empty')
+
+        self.assertEquals(
+            len(inv.wh_tax_line), 0,
+            'Invoice Should not have any Withholding Lines')
+
+        inv.action_cancel_draft()
+        self.assertEquals(
+            inv.state, 'draft',
+            'State should be "draft" on Invoice')
+
+        return True
+
     def test_03_create_an_invoice_with_taxes_no_wh(self):
         """Test withholding in invoice with taxes but wh_agent_itbms=False"""
         sale_id = self.ref('l10n_pa_withholding.so_02')
