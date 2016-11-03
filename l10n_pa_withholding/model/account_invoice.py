@@ -75,8 +75,6 @@ class AccountInvoice(models.Model):
         for invoice_brw in self:
             if invoice_brw.type not in ('out_invoice', 'out_refund'):
                 continue
-            if not invoice_brw.tax_line:
-                continue
             if not invoice_brw.wh_agent_itbms:
                 continue
             if invoice_brw.wh_move_id:
@@ -86,6 +84,15 @@ class AccountInvoice(models.Model):
                     _('Error!'),
                     _('Please define a Withholding Subject to this invoice.'))
             if invoice_brw.l10n_pa_wh_subject == 'na':
+                continue
+            wh_basis = aitw_obj.wh_subject_mapping(
+                invoice_brw.l10n_pa_wh_subject).get('basis')
+
+            # There is a precondition which states that a document will be
+            # withheld depending on the type of withholding subject.
+            # If the withholding concept is `5` or `6` the withholding is to
+            # be applied based on invoice_total
+            if not invoice_brw.tax_line and wh_basis != 'total':
                 continue
 
             journal = invoice_brw.company_id.wh_sale_itbms_journal_id
@@ -244,9 +251,15 @@ class AccountInvoiceTaxWh(models.Model):
     @api.multi
     def wh_subject_mapping(self, val):
         res = dict([
-            ('1', 100), ('2', 50), ('3', 100),
-            ('4', 50), ('5', 2), ('6', 1), ('7', 50)])
-        return res.get(val, 0.0)
+            ('1', {'rate': 100, 'basis': 'tax'}),
+            ('2', {'rate': 50, 'basis': 'tax'}),
+            ('3', {'rate': 100, 'basis': 'tax'}),
+            ('4', {'rate': 50, 'basis': 'tax'}),
+            ('5', {'rate': 2, 'basis': 'total'}),
+            ('6', {'rate': 1, 'basis': 'total'}),
+            ('7', {'rate': 50, 'basis': 'tax'}),
+        ])
+        return res.get(val, {})
 
     @api.model
     def wh_tax_account(self, invoice_id):
@@ -266,7 +279,7 @@ class AccountInvoiceTaxWh(models.Model):
             date=invoice.date_invoice or fields.Date.context_today(invoice))
         company_currency = invoice.company_id.currency_id
         account_id = self.wh_tax_account(invoice)
-        wh = self.wh_subject_mapping(invoice.l10n_pa_wh_subject)
+        wh = self.wh_subject_mapping(invoice.l10n_pa_wh_subject).get('rate')
         for line in invoice.invoice_line:
             taxes = line.invoice_line_tax_id.compute_all(
                 (line.price_unit * (1 - (line.discount or 0.0) / 100.0)),
