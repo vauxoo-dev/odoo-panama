@@ -7,7 +7,7 @@ import time
 import os
 import tempfile
 
-from openerp import fields, models, api, _
+from openerp import fields, models, api
 
 
 class AccountAnnex95Report(models.TransientModel):
@@ -16,8 +16,8 @@ class AccountAnnex95Report(models.TransientModel):
     _name = 'account.pa.annex95.report'
 
     annex95_columns = [
-        'entity', 'vat', 'dv', 'name', 'supplier_invoice_number', 'date',
-        'concept', 'type', 'subtotal', 'tax']
+        'entity', 'vat', 'dv', 'name', 'invoice_number', 'wh_line',
+        'tax_amount', 'subject', 'wh_amount']
 
     name = fields.Char(readonly=True)
     company_id = fields.Many2one(
@@ -39,7 +39,7 @@ class AccountAnnex95Report(models.TransientModel):
         aitw_obj = self.env['account.invoice.tax.wh']
 
         domain_args = [
-            ('invoice_id.type', '=', 'in_invoice'),
+            ('invoice_id.type', '=', 'out_invoice'),
             ('invoice_id.period_id', '=', self.period_id.id),
             ('invoice_id.state', 'in', ['open', 'paid']),
         ]
@@ -58,25 +58,8 @@ class AccountAnnex95Report(models.TransientModel):
             self.write({'state': 'not_file'})
             return dict_return
 
-        data_lines, partner_ids, invoice_ids = lines_annex95.get_data()
-        if partner_ids:
-            return {
-                'name': _('Partners to fix Data for Annex 95'),
-                'view_type': 'form',
-                'view_mode': 'tree,form',
-                'res_model': 'res.partner',
-                'type': 'ir.actions.act_window',
-                'domain': [('id', 'in', partner_ids)],
-            }
-        if invoice_ids:
-            return {
-                'name': _('Invoices to fix Data for Annex 95'),
-                'view_type': 'form',
-                'view_mode': 'tree,form',
-                'res_model': 'account.invoice',
-                'type': 'ir.actions.act_window',
-                'domain': [('id', 'in', invoice_ids)],
-            }
+        data_lines = lines_annex95.get_data()
+
         name = "Anexo95_%s_%s.%s"
         ruc = self.company_id.partner_id.vat_alone or 'fix-ruc-on-company'
         period = time.strftime(
