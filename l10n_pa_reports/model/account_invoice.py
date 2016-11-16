@@ -75,7 +75,7 @@ class AccountInvoiceTaxWh(models.Model):
                 'vat': vat,
                 'dv': dv,
                 'name': partner_brw.name,
-                'invoice_number': line.name,
+                'invoice_number': line.number,
                 'wh_line': wh_line.base_amount,
                 'tax_amount': wh_line.tax_amount,
                 'subject': line.l10n_pa_wh_subject,

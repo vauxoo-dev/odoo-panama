@@ -75,6 +75,7 @@
             <field name="partner_id" ref="l10n_pa_reports.res_partner_panama"/>
             <field name="wh_agent_itbms" eval="True"/>
             <field name="l10n_pa_wh_subject">4</field>
+            <field name="internal_number">9XU3974</field>
         </record>
         <record id="demo_invoice_1_line_rpanrearpanelshe0" model="account.invoice.line">
             <field name="invoice_id" ref="demo_invoice_1"/>

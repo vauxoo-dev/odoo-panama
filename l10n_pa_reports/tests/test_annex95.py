@@ -50,7 +50,6 @@ class TestAccountPaAnnex95Report(TransactionCase):
             'account.iva')
         self.invoice_id.company_id.wh_sale_itbms_journal_id = self.ref(
             'account.miscellaneous_journal')
-        self.invoice_id.name = '9XU3974'
         self.invoice_id.signal_workflow('invoice_open')
         self.assertEquals(
             bool(self.invoice_id.wh_move_id), True,
