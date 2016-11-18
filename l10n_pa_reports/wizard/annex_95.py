@@ -64,7 +64,7 @@ class AccountAnnex95Report(models.TransientModel):
         ruc = self.company_id.partner_id.vat_alone or 'fix-ruc-on-company'
         period = time.strftime(
             '%Y%m', time.strptime(self.period_id.date_start, '%Y-%m-%d'))
-        txt = self._get_file_txt(data_lines)
+        txt = self._get_file_txt_annex95(data_lines)
         self.write({
             'state': 'get',
             'file_txt': txt,
@@ -73,7 +73,7 @@ class AccountAnnex95Report(models.TransientModel):
         return dict_return
 
     @api.model
-    def _get_file_txt(self, dict_data):
+    def _get_file_txt_annex95(self, dict_data):
         (fileno, fname) = tempfile.mkstemp('.txt', 'tmp')
         os.close(fileno)
         f_write = open(fname, 'wb')
