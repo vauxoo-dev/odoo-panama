@@ -7,19 +7,21 @@ msgstr ""
 "Project-Id-Version: Odoo Server 8.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-11-21 16:09+0000\n"
-"PO-Revision-Date: 2016-11-21 16:09+0000\n"
-"Last-Translator: <>\n"
-"Language-Team: \n"
+"PO-Revision-Date: 2016-11-21 16:53+0000\n"
+"Last-Translator: Humberto Arocha <hbto@vauxoo.com>\n"
+"Language-Team: Spanish <http://example.com/projects/odoo-"
+"panama/l10n_pa_reports/es/>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: \n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 2.2-dev\n"
 
 #. module: l10n_pa_reports
 #: model:ir.ui.menu,name:l10n_pa_reports.menu_account_annex95_declaration
 msgid "(PA) Annex 95"
-msgstr ""
+msgstr "(PA) Anexo 95"
 
 #. module: l10n_pa_reports
 #: model:ir.ui.menu,name:l10n_pa_reports.menu_account_form43_declaration
@@ -35,7 +37,7 @@ msgstr "- No Facturas Posteadas en el Periodo Seleccionado."
 #. module: l10n_pa_reports
 #: view:account.pa.annex95.report:l10n_pa_reports.view_account_pa_annex95_report
 msgid "- You Have Selected a Wrong Period."
-msgstr ""
+msgstr "- Has Seleccionado un Período Errado."
 
 #. module: l10n_pa_reports
 #: view:account.pa.form43.report:l10n_pa_reports.view_account_pa_form43_report
@@ -45,17 +47,17 @@ msgstr "- Has Seleccionado un Período Errado."
 #. module: l10n_pa_reports
 #: view:account.pa.annex95.report:l10n_pa_reports.view_account_pa_annex95_report
 msgid "Annex 95 Report"
-msgstr ""
+msgstr "Report Anexo 95"
 
 #. module: l10n_pa_reports
 #: view:account.pa.annex95.report:l10n_pa_reports.view_account_pa_annex95_report
 msgid "Annex 95 Report has not been created!"
-msgstr ""
+msgstr "¡El Reporte Anexo 95 no se ha creado!"
 
 #. module: l10n_pa_reports
 #: view:account.pa.annex95.report:l10n_pa_reports.view_account_pa_annex95_report
 msgid "Annex 95 report has been successfully created!"
-msgstr ""
+msgstr "¡El Report Anexo 95 se ha creado exitosamente!"
 
 #. module: l10n_pa_reports
 #: view:account.pa.annex95.report:l10n_pa_reports.view_account_pa_annex95_report
@@ -136,7 +138,7 @@ msgstr "Obtener"
 #. module: l10n_pa_reports
 #: view:account.pa.annex95.report:l10n_pa_reports.view_account_pa_annex95_report
 msgid "Here is the exported Annex 95 Report file:"
-msgstr ""
+msgstr "Aquí está el archivo del Reporte Anexo 95 exportado:"
 
 #. module: l10n_pa_reports
 #: view:account.pa.form43.report:l10n_pa_reports.view_account_pa_form43_report
@@ -157,7 +159,7 @@ msgstr "Factura"
 #. module: l10n_pa_reports
 #: model:ir.model,name:l10n_pa_reports.model_account_invoice_tax_wh
 msgid "Invoice Tax"
-msgstr ""
+msgstr "Impuesto en la Factura"
 
 #. module: l10n_pa_reports
 #: code:addons/l10n_pa_reports/wizard/form_43.py:73
@@ -212,7 +214,7 @@ msgstr "Período"
 #. module: l10n_pa_reports
 #: view:account.pa.annex95.report:l10n_pa_reports.view_account_pa_annex95_report
 msgid "Probably because:"
-msgstr ""
+msgstr "Probablemente porque:"
 
 #. module: l10n_pa_reports
 #: view:account.pa.form43.report:l10n_pa_reports.view_account_pa_form43_report
@@ -246,12 +248,12 @@ msgstr "Este es el Nombre del Fichero"
 #. module: l10n_pa_reports
 #: model:ir.actions.act_window,name:l10n_pa_reports.action_account_pa_annex95_report
 msgid "annex95 Report"
-msgstr ""
+msgstr "Report anexo95"
 
 #. module: l10n_pa_reports
 #: model:ir.actions.act_window,name:l10n_pa_reports.action_account_pa_form43_report
 msgid "form43 Report"
-msgstr ""
+msgstr "Reporte form43"
 
 #. module: l10n_pa_reports
 #: view:account.pa.form43.report:l10n_pa_reports.view_account_pa_form43_report
