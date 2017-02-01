@@ -21,16 +21,13 @@
                                 <field name="phone"/>
                                 <field name="mobile"/>
                             </group>
-                            <div>
-                                <field name="use_parent_address"/><label for="use_parent_address"/>
-                            </div>
                             <group>
                                 <label for="type"/>
                                 <div name="div_type">
                                     <field class="oe_inline" name="type"/>
                                 </div>
-                                <label for="street" string="Address" attrs="{'invisible': [('use_parent_address','=', True)]}"/>
-                                <div attrs="{'invisible': [('use_parent_address','=', True)]}" name="div_address">
+                                <label for="street" string="Address" attrs="{'invisible': [('type','=', 'contact')]}"/>
+                                <div attrs="{'invisible': [('type','=', 'contact')]}" name="div_address">
                                     <field name="street" placeholder="Street..."/>
                                     <field name="street2"/>
                                     <div class="address_format">
@@ -70,7 +67,6 @@
                     <field name="mobile"/>
                     <field name="fax"/>
                     <field name="state_id"/>
-                    <field name="has_image"/>
                     <templates>
                         <t t-name="kanban-box">
                             <t t-set="color" t-value="kanban_color(record.color.raw_value)"/>
@@ -126,7 +122,7 @@
             <field name="inherit_id" ref="base.view_partner_form"/>
             <field name="arch" type="xml">
                <xpath expr='//field[@name="child_ids"]' position="replace">
-                    <field name="child_ids" mode="kanban" context="{'default_parent_id': active_id, 'default_street': street, 'default_street2': street2, 'default_city': city, 'default_state_id': state_id, 'default_zip': zip, 'default_country_id': country_id, 'default_supplier': supplier, 'default_customer': customer, 'default_use_parent_address': True, 'kanban_view_ref': 'l10n_pa_localization.view_partner_simple_kanban_panama', 'form_view_ref': 
+                    <field name="child_ids" mode="kanban" context="{'default_parent_id': active_id, 'default_street': street, 'default_street2': street2, 'default_city': city, 'default_state_id': state_id, 'default_zip': zip, 'default_country_id': country_id, 'default_supplier': supplier, 'default_customer': customer, 'kanban_view_ref': 'l10n_pa_localization.view_partner_simple_kanban_panama', 'form_view_ref':
                     'l10n_pa_localization.view_partner_simple_form_panama'}"/>
                 </xpath>
             </field>

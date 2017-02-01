@@ -43,7 +43,7 @@
         </record>
 
         <menuitem action="action_country_state_district"
-            id="menu_country_state_district_partner" parent="base.menu_localisation" sequence="2" groups="base.group_no_one"/>
+            id="menu_country_state_district_partner" parent="sales_team.menu_localisation" sequence="2" groups="base.group_no_one"/>
 
         <!--
           Corregimientos
@@ -88,7 +88,7 @@
         </record>
 
         <menuitem action="action_country_state_district_township"
-            id="menu_country_state_district_township_partner" parent="base.menu_localisation" sequence="3" groups="base.group_no_one"/>
+            id="menu_country_state_district_township_partner" parent="sales_team.menu_localisation" sequence="3" groups="base.group_no_one"/>
 
         <!--
           Barrios
@@ -136,6 +136,6 @@
 
         <menuitem action="action_country_state_district_township_hood"
             id="menu_country_state_district_township_hood_partner"
-            parent="base.menu_localisation" sequence="4" groups="base.group_no_one"/>
+            parent="sales_team.menu_localisation" sequence="4" groups="base.group_no_one"/>
     </data>
 </openerp>

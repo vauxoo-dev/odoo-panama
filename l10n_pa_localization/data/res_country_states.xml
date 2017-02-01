@@ -54,17 +54,17 @@
         <record id="state_comarca_kuna_yala" model="res.country.state">
             <field name="country_id" ref="base.pa"/>
             <field name="name">COMARCA KUNA YALA</field>
-            <field name="code">com</field>
+            <field name="code">comk</field>
         </record>
         <record id="state_comarca_embera" model="res.country.state">
             <field name="country_id" ref="base.pa"/>
             <field name="name">COMARCA EMBERÁ</field>
-            <field name="code">com</field>
+            <field name="code">come</field>
         </record>
         <record id="state_comarca_ngobe_bugle" model="res.country.state">
             <field name="country_id" ref="base.pa"/>
             <field name="name">COMARCA NGÖBE BUGLÉ</field>
-            <field name="code">com</field>
+            <field name="code">comn</field>
         </record>
     </data>
 </openerp>

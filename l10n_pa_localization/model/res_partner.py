@@ -169,30 +169,32 @@ class ResPartner(models.Model):
                 arch = etree.tostring(doc)
         return arch
 
-    def fields_view_get(self, cr, user, view_id=None, view_type='form',
-                        context=None, toolbar=False, submenu=False):
-        if (not view_id) and (view_type == 'form') and context and context.get(
+    @api.model
+    def fields_view_get(self, view_id=None, view_type='form',
+                        toolbar=False, submenu=False):
+        if (not view_id) and (view_type == 'form') and self._context.get(
                 'force_email', False):
-            view_id = self.pool.get('ir.model.data').get_object_reference(
-                cr, user, 'base', 'view_partner_form')[1]
+            view_id = self.pool.env['ir.model.data'].get_object_reference(
+                'base', 'view_partner_form')[1]
         res = super(ResPartner, self).fields_view_get(
-            cr, user, view_id, view_type, context, toolbar=toolbar,
+            view_id, view_type, toolbar=toolbar,
             submenu=submenu)
         if view_type == 'form':
             fields_get = self.fields_get(
-                cr, user, ['district_id', 'township_id', 'hood_id'], context)
+                ['district_id', 'township_id', 'hood_id'])
             res['fields'].update(fields_get)
         return res
 
-    def _address_fields(self, cr, uid, context=None):
+    @api.multi
+    def _address_fields(self):
         """ Returns the list of address fields that are synced from the parent
         when the `use_parent_address` flag is set. """
-        res = super(ResPartner, self)._address_fields(cr, uid, context=context)
+        res = super(ResPartner, self)._address_fields()
         res = res + ['district_id', 'township_id', 'hood_id']
         return res
 
-    def _display_address(
-            self, cr, uid, address, without_company=False, context=None):
+    @api.multi
+    def _display_address(self, without_company=False):
         '''The purpose of this function is to build and return an address
         formatted accordingly to the
         standards of the country where it belongs.
@@ -204,30 +206,29 @@ class ResPartner(models.Model):
         '''
         # get the information that will be injected into the display format
         # get the address format
-        address_format = address.country_id.address_format or "%(street)s\n%("\
+        address_format = self.country_id.address_format or "%(street)s\n%("\
             "street2)s\n%(city)s %(state_code)s %(zip)s\n%(country_name)s"
         if address_format == "%(street)s\n%("\
                 "street2)s\n%(city)s %(state_code)s %(zip)s\n%(country_name)s":
             return super(ResPartner, self)._display_address(
-                cr, uid, address, without_company=without_company,
-                context=context)
+                without_company=without_company)
         args = {
-            'state_code': address.state_id.code or '',
-            'state_name': address.state_id.name or '',
-            'country_code': address.country_id.code or '',
-            'country_name': address.country_id.name or '',
-            'company_name': address.parent_name or '',
-            'district_name': address.district_id and
-            address.district_id.name or '',
-            'township_name': address.township_id and
-            address.township_id.name or '',
-            'hood_name': address.hood_id and address.hood_id.name or '',
+            'state_code': self.state_id.code or '',
+            'state_name': self.state_id.name or '',
+            'country_code': self.country_id.code or '',
+            'country_name': self.country_id.name or '',
+            'company_name': self.parent_name or '',
+            'district_name': self.district_id and
+            self.district_id.name or '',
+            'township_name': self.township_id and
+            self.township_id.name or '',
+            'hood_name': self.hood_id and self.hood_id.name or '',
         }
-        for field in self._address_fields(cr, uid, context=context):
-            args[field] = getattr(address, field) or ''
+        for field in self._address_fields():
+            args[field] = getattr(self, field) or ''
         if without_company:
             args['company_name'] = ''
-        elif address.parent_id:
+        elif self.parent_id:
             address_format = '%(company_name)s\n' + address_format
         return address_format % args
 

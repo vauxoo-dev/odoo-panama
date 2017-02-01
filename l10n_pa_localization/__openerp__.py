@@ -16,7 +16,8 @@
     "website": "http://www.vauxoo.com/",
     "license": "AGPL-3",
     "depends": [
-        "base"
+        "base",
+        "sales_team",
     ],
     "demo": [],
     "data": [
