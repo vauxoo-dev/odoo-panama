@@ -59,8 +59,7 @@ class ResPartner(models.Model):
                 company_pool = self.env['res.company']
                 company_default_id = company_pool._company_default_get(
                     'res.partner')
-                partner.vat_country_id = company_pool.browse(
-                    company_default_id).country_id.id
+                partner.vat_country_id = company_default_id.country_id.id
 
     @api.depends('vat')
     def _get_vat_alone(self):
